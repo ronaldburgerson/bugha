@@ -1068,13 +1068,14 @@ do
         Values = {1,2,3,4,5},
         AllowNull = true,
         Multi = true,
-        Callback = function(v2)
-            AutoSellTbl = {}
-            for i,v in pairs(v2) do
-                table.insert(AutoSellTbl, i)
-            end
-        end
     })
+
+    Options.AutoSellTbl:OnChanged(function(v2)
+        AutoSellTbl = {}
+        for i,v in pairs(v2) do
+            table.insert(AutoSellTbl, i)
+        end
+    end)
 
     AutoSell:AddButton({
         Text = 'Sell All',
@@ -1576,7 +1577,7 @@ do
                 local drop = items[c.Name]
                 if (drop.Type == 'Weapon' or drop.Type == 'Armor') and table.find(AutoSellTbl, tier:GetItemTier(c)) then
                     c:WaitForChild('Level')
-                    Libary:Notify('Sold a Lvl ' .. c.Level.Value .. ' T' .. tier:GetItemTier(c) .. ' ' .. drop.DisplayKey)
+                    Library:Notify('Sold a Lvl ' .. c.Level.Value .. ' T' .. tier:GetItemTier(c) .. ' ' .. drop.DisplayKey)
                     sell(c)
                 end
             end)
