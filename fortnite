@@ -122,7 +122,6 @@ if ReplicatedStorage:FindFirstChild("ActiveMission") then
         InAtlantis = true
     end
 end
-
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait() or LocalPlayer.Character
 local HumanoidRootPart = Character:WaitForChild('HumanoidRootPart')
 local HealthProperties
@@ -963,7 +962,8 @@ local Tabs = {
 }
 
 local Farming = Tabs.Main:AddLeftGroupbox('Farming')
-local AutoSell = Tabs.Main:AddLeftGroupbox('Auto Sell')
+local AutoSell1 = Tabs.Main:AddLeftTabbox('Auto Sell')
+local AutoSell = AutoSell1:AddTab('Selling')
 local Miscellaneous = Tabs.Main:AddRightGroupbox('Miscellaneous')
 local Gui = Tabs.Main:AddRightGroupbox('Gui')
 local StatsTabbox = Tabs.Main:AddRightTabbox('temp')
@@ -1063,62 +1063,38 @@ end
 
 -- Auto Sell and some restart dungeon
 do
-    AutoSell:AddToggle('Tier1', {
-        Text = 'Tier 1',
-        Default = false, -- Default value (true / false)
-    })
-    AutoSell:AddToggle('Tier2', {
-        Text = 'Tier 2',
-        Default = false, -- Default value (true / false)
-    })
-    AutoSell:AddToggle('Tier3', {
-        Text = 'Tier 3',
-        Default = false, -- Default value (true / false)
-    })
-    AutoSell:AddToggle('Tier4', {
-        Text = 'Tier 4',
-        Default = false, -- Default value (true / false)
-    })
-    AutoSell:AddToggle('Tier5', {
-        Text = 'Tier 5',
-        Default = false, -- Default value (true / false)
+    AutoSell:AddDropdown('AutoSellTbl', {
+        Text = 'Auto Sell Tiers',
+        Values = {1,2,3,4,5},
+        AllowNull = true,
+        Multi = true,
+        Callback = function(v2)
+            AutoSellTbl = {}
+            for i,v in pairs(v2) do
+                table.insert(AutoSellTbl, i)
+            end
+        end
     })
 
-    Toggles.Tier1:OnChanged(function()
-        if Toggles.Tier1.Value then
-            table.insert(AutoSellTbl, '1')
-        elseif not Toggles.Tier1.Value and table.find(AutoSellTbl, '1') then
-            table.remove(AutoSellTbl, table.find(AutoSellTbl, '1'))
-        end
-    end)
-    Toggles.Tier2:OnChanged(function()
-        if Toggles.Tier2.Value then
-            table.insert(AutoSellTbl, '2')
-        elseif not Toggles.Tier2.Value and table.find(AutoSellTbl, '2') then
-            table.remove(AutoSellTbl, table.find(AutoSellTbl, '2'))
-        end
-    end)
-    Toggles.Tier3:OnChanged(function()
-        if Toggles.Tier3.Value then
-            table.insert(AutoSellTbl, '3')
-        elseif not Toggles.Tier3.Value and table.find(AutoSellTbl, '3') then
-            table.remove(AutoSellTbl, table.find(AutoSellTbl, '3'))
-        end
-    end)
-    Toggles.Tier4:OnChanged(function()
-        if Toggles.Tier4.Value then
-            table.insert(AutoSellTbl, '4')
-        elseif not Toggles.Tier4.Value and table.find(AutoSellTbl, '4') then
-            table.remove(AutoSellTbl, table.find(AutoSellTbl, '4'))
-        end
-    end)
-    Toggles.Tier5:OnChanged(function()
-        if Toggles.Tier5.Value then
-            table.insert(AutoSellTbl, '5')
-        elseif not Toggles.Tier5.Value and table.find(AutoSellTbl, '5') then
-            table.remove(AutoSellTbl, table.find(AutoSellTbl, '5'))
-        end
-    end)
+    AutoSell:AddButton({
+        Text = 'Sell All',
+        Tooltip = 'Sells all weapons and armors of selected tiers',
+        Func = function()
+            local newSellTbl = {}
+            for i,v in pairs(Inventory:GetChildren()) do
+                local newItem = items[v.Name]
+                if (newItem.Type == 'Weapon' or newItem.Type == 'Armor') and table.find(AutoSellTbl, tier:GetItemTier(v)) and not v:FindFirstChild('Locked') then
+                    table.insert(newSellTbl, v)
+                end
+            end  
+            if #newSellTbl > 0 then
+                Library:Notify('Sold ' .. #newSellTbl .. ' items')
+                Shared.Drops.SellItems:InvokeServer(newSellTbl)
+            end
+        end,
+        DoubleClick = true,
+    })
+
 end
 
 --  Miscellaneous
@@ -1598,14 +1574,10 @@ do
         Shared.Missions.MissionFinished.OnClientEvent:Once(function()
             Inventory.ChildAdded:Connect(function(c)
                 local drop = items[c.Name]
-                if drop.Type == 'Weapon' or drop.Type == 'Armor' then
-                    for i,v in pairs(AutoSellTbl) do
-                        if tier:GetItemTier(c) == tonumber(v) then
-                            c:WaitForChild('Level')
-                            --print('Sold a Lvl ' .. c.Level.Value .. ' T' .. tier:GetItemTier(c) .. ' ' .. drop.DisplayKey)
-                            sell(c)
-                        end
-                    end
+                if (drop.Type == 'Weapon' or drop.Type == 'Armor') and table.find(AutoSellTbl, tier:GetItemTier(c)) then
+                    c:WaitForChild('Level')
+                    Libary:Notify('Sold a Lvl ' .. c.Level.Value .. ' T' .. tier:GetItemTier(c) .. ' ' .. drop.DisplayKey)
+                    sell(c)
                 end
             end)
             if Toggles.Autofarm.Value then
@@ -1757,20 +1729,18 @@ do
         -- Autosell
         Inventory.ChildAdded:Connect(function(c)
             local drop = items[c.Name]
-            if drop.Type == 'Weapon' or drop.Type == 'Armor' then
+            if (drop.Type == 'Weapon' or drop.Type == 'Armor') then
                 task.spawn(function()
                     task.wait(2)
                     require(game:GetService("ReplicatedStorage").Client.Gui):Get("LootReceived"):_Close()
                     game:GetService("Players").LocalPlayer.PlayerGui.LootReceived.LootReceived.Visible = false
                 end)
-                for i,v in pairs(AutoSellTbl) do
-                    if tier:GetItemTier(c) == tonumber(v) then
-                        c:WaitForChild('Level')
-                        task.wait(2)
-                        --print('Sold a Lvl ' .. c.Level.Value .. ' T' .. tier:GetItemTier(c) .. ' ' .. drop.DisplayKey)
-                        sell(c)
-                    end
-                end
+            end
+            if (drop.Type == 'Weapon' or drop.Type == 'Armor') and table.find(AutoSellTbl, tier:GetItemTier(c)) then
+                c:WaitForChild('Level')
+                task.wait(2)
+                Libary:Notify('Sold a Lvl ' .. c.Level.Value .. ' T' .. tier:GetItemTier(c) .. ' ' .. drop.DisplayKey)
+                sell(c)
             end
         end)
     end
