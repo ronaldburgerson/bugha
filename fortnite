@@ -916,7 +916,7 @@ local ClassData = {
 
 local OffsetNum
 if ClassData[Class].Type == "Melee" then
-    OffsetNum = -30
+    OffsetNum = 30
 else
     OffsetNum = 95
 end
@@ -1012,6 +1012,15 @@ do
         Rounding = 1,
         Compact = true,
     })
+    newOffset = 0
+    Options.Offset:OnChanged(function(c)
+        print(c)
+        if ClassData[Class].Type == "Melee" then
+            newOffset = -c
+        else
+            newOffset = c
+        end
+    end)
 
     Farming:AddToggle('RestartDungeon', {
         Text = 'Restart Dungeon',
@@ -1337,7 +1346,7 @@ do
                         ExtraOffset = ClassData[Class].Range < 30 and -(v.PrimaryPart.Size.y / 2 + 3) or v.PrimaryPart.Size.y / 2 +3
                         while v:FindFirstChild("HealthProperties") and v.HealthProperties.Health.Value > 0 and Toggles.Autofarm.Value 
                         and HealthProperties:FindFirstChild('Health') and HealthProperties.Health.Value > 0 do
-                            SmartPlayerTp(v.PrimaryPart, 0, Options.Offset.Value + ExtraOffset, 1) 
+                            SmartPlayerTp(v.PrimaryPart, 0, newOffset + ExtraOffset, 1) 
                             Heartbeat:Wait()
                         end
                     end
@@ -1355,7 +1364,7 @@ do
                         ExtraOffset = ClassData[Class].Range < 30 and -(v.PrimaryPart.Size.y / 2 + 3) or v.PrimaryPart.Size.y / 2 + 3
                         while v:FindFirstChild("HealthProperties") and v.HealthProperties.Health.Value > 0 
                         and HealthProperties.Health.Value > 0 and Toggles.Autofarm.Value do
-                            SmartPlayerTp(v.PrimaryPart, 0, Options.Offset.Value + ExtraOffset, 1) 
+                            SmartPlayerTp(v.PrimaryPart, 0, newOffset + ExtraOffset, 1) 
                             Heartbeat:Wait()
                         end
                     elseif v.Name == v1 and MobCount == 1 then
@@ -1365,7 +1374,7 @@ do
                             if MobCount > 1 then
                                 break
                             end
-                            SmartPlayerTp(v.PrimaryPart, 0, Options.Offset.Value + ExtraOffset, 1) 
+                            SmartPlayerTp(v.PrimaryPart, 0, newOffset + ExtraOffset, 1) 
                             Heartbeat:Wait()
                         end
                     end
@@ -1872,7 +1881,7 @@ Toggles.Autofarm:OnChanged(function()
                             while v:FindFirstChild("HealthProperties") and v.HealthProperties.Health.Value > 0 and Character and Toggles.Autofarm.Value 
                             and (v.MobProperties.CurrentAttack.Value == 'Piledriver' or v.MobProperties.CurrentAttack.Value == 'Slap') 
                             and v:FindFirstChild('Collider') and not (PipePause) do
-                                SmartPlayerTp(v.Collider, 0, Options.Offset.Value, 0) 
+                                SmartPlayerTp(v.Collider, 0, newOffset, 0) 
                                 Heartbeat:Wait()
                             end
                         else
