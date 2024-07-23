@@ -1014,7 +1014,6 @@ do
     })
     newOffset = 0
     Options.Offset:OnChanged(function(c)
-        print(c)
         if ClassData[Class].Type == "Melee" then
             newOffset = -c
         else
