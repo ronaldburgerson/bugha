@@ -233,7 +233,7 @@ task.spawn(function()
     local Players = game:GetService('Players')
     local LocalPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal('LocalPlayer'):Wait() or Players.LocalPlayer
     
-    local GetMissionChest = Shared:WaitForChild('Missions'):WaitForChild8'GetMissionPrize')
+    local GetMissionChest = Shared:WaitForChild('Missions'):WaitForChild('GetMissionPrize')
     local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait() or LocalPlayer.Character
     local HumanoidRootPart = Character:WaitForChild('HumanoidRootPart')
     local Skillsets = Shared:WaitForChild('Combat'):WaitForChild('Skillsets')
