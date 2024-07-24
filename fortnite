@@ -1585,7 +1585,7 @@ do
                 GetMissionChest:InvokeServer()
                 GetMissionChest:InvokeServer()
             end
-            task.wait(6)
+            task.wait(3)
             if Toggles.RestartDungeon.Value and Toggles.Autofarm.Value then
                 StartRaid(DungeonID, DifficultyID)
             elseif Toggles.NextDungeon.Value and Toggles.Autofarm.Value then
