@@ -1,4 +1,9 @@
-print(url,LifeStealRepeats, Disable3dRendering)
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+if not game.Players.LocalPlayer.CharacterAdded then
+    game.Players.LocalPlayer.CharacterAdded:Wait()
+end
 local script = string.format([[
     getgenv().LifeStealRepeats = %s
     getgenv().url = %q
@@ -14,12 +19,6 @@ if Disable3dRendering then
     cloneref(game:GetService("RunService")):Set3dRenderingEnabled(false)
 end
 task.spawn(function()
-    if not game:IsLoaded() then
-        game.Loaded:Wait()
-    end
-    if not game.Players.LocalPlayer.CharacterAdded then
-        game.Players.LocalPlayer.CharacterAdded:Wait()
-    end
     if not game:GetService("ReplicatedStorage"):WaitForChild("ActiveMission", 15) then
         return
     end
