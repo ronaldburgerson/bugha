@@ -233,7 +233,7 @@ task.spawn(function()
     local Players = game:GetService('Players')
     local LocalPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal('LocalPlayer'):Wait() or Players.LocalPlayer
     
-    local GetMissionChest = Shared.Missions.GetMissionPrize
+    local GetMissionChest = Shared:WaitForChild('Missions'):WaitForChild8'GetMissionPrize')
     local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait() or LocalPlayer.Character
     local HumanoidRootPart = Character:WaitForChild('HumanoidRootPart')
     local Skillsets = Shared:WaitForChild('Combat'):WaitForChild('Skillsets')
@@ -243,7 +243,7 @@ task.spawn(function()
     local InTower = false
     local InInfiniteTower = false
     local Towers = {21,23,27,29,34}
-    local MissionObjects = game:GetService("Workspace").MissionObjects
+    local MissionObjects = game:GetService("Workspace"):WaitForChild('MissionObjects')
     local DungeonID = ReplicatedStorage:WaitForChild("ActiveMission").Value
     local InAtlantis = false
     local MissionScripts = game.ReplicatedStorage:WaitForChild("MissionScripts")
