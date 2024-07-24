@@ -4,6 +4,7 @@ end
 if not game.Players.LocalPlayer.CharacterAdded then
     game.Players.LocalPlayer.CharacterAdded:Wait()
 end
+task.wait(2)
 local script = string.format([[
     getgenv().LifeStealRepeats = %s
     getgenv().url = %q
