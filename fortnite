@@ -1948,7 +1948,7 @@ if Whitelisted then
                         startedVaneSafeLoop = true
                         task.spawn(function()
                             while true do
-                                if HealthProperties.MaxHealth.Value - HealthProperties.Health.Value >= 20000 then
+                                if HealthProperties.MaxHealth.Value - HealthProperties.Health.Value >= 10000 then
                                     print(HealthProperties.Health.Value,HealthProperties.MaxHealth.Value)
                                     if Toggles.Autofarm.Value then
                                         Library:Notify('Teleported to arena to avoid dying')
