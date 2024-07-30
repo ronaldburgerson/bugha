@@ -207,15 +207,11 @@ LocalPlayer.CharacterAdded:Connect(function(NewCharacter)
     HealthProperties = Character:WaitForChild('HealthProperties')
     Equipment = Character:WaitForChild('Equipment')
 end)
-local dungeonTime = 0
+local dungeonStartTime = 0
+local dungeonEndTime = 0
 Shared.Missions.MissionStart.OnClientEvent:Once(function()
     MissionStarted = true
-    task.spawn(function()
-		while bigboo == true do
-			task.wait(1)
-			count += 10
-		end
-	end)
+    dungeonStartTime = tick()
 end)
 --if MarketplaceService:UserOwnsGamePassAsync(UserId, DoubleDrop) then
 --    ChestName = 'lol'
@@ -543,7 +539,7 @@ local ClassData = {
 
     Demon = {
         Range = 10,
-        Type = 'Melee',
+        Type = 'Ranged',
         Primary = 'Scythe',
         Skills = {
             --{ Skill = 'Demon1', Cooldown = 0.85 },
@@ -952,8 +948,7 @@ local Window = Library:CreateWindow({
     TabPadding = 8,
     MenuFadeTime = 0
 })
-Library:Toggle()
-Library:Toggle()
+
 local Tabs = {
     Main = Window:AddTab('Main'),
     Teleports = Window:AddTab('Teleports'),
@@ -992,7 +987,7 @@ do
         Text = 'Life Steal Repeats',
         Default = 1,
         Min = 1,
-        Max = 20,
+        Max = 10,
         Rounding = 0,
         HideMax = true,
     })
@@ -1035,6 +1030,14 @@ do
         Text = 'Collect Drops',
         Default = false, -- Default value (true / false)
     })
+
+    Farming:AddInput('dungeonHook', {
+        Numeric = false, -- true / false, only allows numbers
+        Finished = true, -- true / false, only calls callback when you press enter
+        Text = 'Webhook Link',
+		Tooltip = 'Put your own webhook link to log dungeon completions/fails',
+    })
+    Farming:AddDivider()
 
     Farming:AddSlider('FastSprint', {
         Text = 'Sprint Speed',
@@ -1133,7 +1136,7 @@ do
                             if Item:FindFirstChild('Upgrade') and Item.Upgrade.Value == Item.UpgradeLimit.Value then
                                 break
                             else
-                            Upgrade:FireServer(Item) 
+                                Upgrade:FireServer(Item) 
                             end
                         end
                     end
@@ -1533,6 +1536,8 @@ end
 
 -- Dungeon fixer and restartdungeon and nextdungeon and autosell
 do
+
+    -- Dungeon Fixer and dungeon hook
     if InMission then
         if MissionScripts:FindFirstChild(6) then -- Gravetower move pillars to mob folder
             task.spawn(function()
@@ -1569,10 +1574,134 @@ do
                 end
             end)
         end
+
+        -- Dungeon Hook
+        local end1 = game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("MissionRewards").MissionRewards.RaidClear
+        local x = "D U N G E O N    C"
+        local x2 = "D U N G E O N    C L E A R E D"
+        local y = "D U N G E O N    F"
+        local y2 = "D U N G E O N    F A I L U R E"
+        local z = "T O W E R"
+        local name = game.Players.LocalPlayer.Name
+        local raids = {21,22,17,23,27,29,34,43}
+        local diffs = {Normal = 1, Challenge = 5}
+        local dungname = "str1" .. " str2"
+        local bool = false
+        local HttpService = game:GetService("HttpService")
+        for i,v in pairs(DungeonData) do
+
+            -- Non nightmare dungeons
+            if DungeonID == v.Id then
+                dungname = string.gsub(dungname,"str1",v.Name)
+                for i2,v2 in pairs(raids) do
+                    if DungeonID == v2 then
+                        bool = true
+                        dungname = string.gsub(dungname," str2","")
+                    end
+                end
+                for i3,v3 in pairs(diffs) do
+                    if DifficultyID == v3 and bool == false then
+                        dungname = string.gsub(dungname,"str2",i3)
+                        break
+                    end
+                end
+            end
+
+            -- Nightmare dungeons
+            if DungeonID > 500 then
+                if game:GetService("ReplicatedStorage").MissionScripts:FindFirstChild(v.Id) then
+                    local newname = "Nightmare " .. v.Name
+                    dungname = string.gsub(dungname,"str1",newname)
+                    for i2,v2 in pairs(diffs) do
+                        if DifficultyID == v2 then
+                            dungname = string.gsub(dungname,"str2",i2)
+                            break
+                        end
+                    end
+                end
+            end
+        end
+        local function GetTime() 
+            local time = os.date("!*t", os.time())
+            local hour = time.hour
+            local min = time.min
+            local sec = time.sec
+            local day = time.day
+            local month = time.month
+            if time.hour < 10 then
+                hour = '0' .. time.hour
+            end
+            if time.min < 10 then
+                min = '0' .. time.min
+            end
+            if time.sec < 10 then
+                sec = '0' .. time.sec
+            end
+            if time.day < 10 then
+                day = '0' .. time.day
+            end
+            if time.month < 10 then
+                month = '0' .. time.month
+            end
+            return hour .. ':' .. min .. ':' .. sec .. ' - ' .. day .. '/' .. month .. '/' .. time.year
+        end
+        local colorTbl = {
+            Green = 0x00FF00,
+            Red = 0xFF0000,
+            Black = 0x000000,
+            Cyan = 0x00c8ff,
+            Yellow = 0xffff00,
+        }
+        function msg(v1,v2,v3)  
+            task.wait()
+            local newLink = Options.dungeonHook.Value
+            if newLink and #newLink > 30 then
+                local vaneraids = game:GetService("ReplicatedStorage").Shared.LeaderboardHookup.GetScore:InvokeServer("VANE_KILLS",1)
+                local newStr
+                if DungeonID == 44 then
+                    newStr = name .. " " .. v1 .. " " .. dungname .. " in " .. "**" .. math.round((dungeonEndTime-dungeonStartTime)/0.1) / 10 .. "s** with " .. Class .. " at " .. GetTime()
+                    .. '\nVane Raids Completed Total: **' .. vaneraids[1] .. '**\nVane Raids Completed Daily: ' .. '**' .. vaneraids[2] .. '**'
+                else
+                    newStr = name .. " " .. v1 .. " " .. dungname .. " in " .. "**" .. math.round((dungeonEndTime-dungeonStartTime)/0.1) / 10 .. "s** with " .. Class .. " at " .. GetTime()
+                end
+                request({
+                    Url = newLink,
+                    Method = "POST",
+                    Headers = {
+                        ["Content-Type"] = "application/json"
+                    },
+                    Body = HttpService:JSONEncode({
+                        ["embeds"] = {{
+                            ["title"] = v3,
+                            ["description"] = newStr,
+                            ["type"] = 'rich',
+                            ["color"] = tonumber(v2),
+                        }}
+                    })
+                })
+            end
+        end
+        task.spawn(function()
+            repeat wait() until end1.Text == x or end1.Text == x2
+            msg("completed", colorTbl.Green)
+        end)
+        task.spawn(function()
+            repeat wait() until end1.Text == y or end1.Text == y2
+            msg("failed",colorTbl.Red)
+        end)
+        task.spawn(function()
+            repeat wait() until end1.Text == z
+            msg("failed",colorTbl.Red)
+        end)
+        TowerEnd:GetPropertyChangedSignal("Text"):Once(function()
+            msg("completed",colorTbl.Green)
+        end)
     end
 
     if InDungeon then
         Shared.Missions.MissionFinished.OnClientEvent:Once(function()
+            dungeonEndTime = tick()
+
             Inventory.ChildAdded:Connect(function(c)
                 local drop = items[c.Name]
                 if (drop.Type == 'Weapon' or drop.Type == 'Armor') and table.find(AutoSellTbl, tier:GetItemTier(c)) then
@@ -1648,6 +1777,7 @@ do
 
         -- Restart Dungeon if fail
         Shared.Missions.MissionFinished.OnClientEvent:Once(function()
+            dungeonEndTime = tick()
             task.wait(1)
             if Toggles.RestartDungeon.Value and Toggles.Autofarm.Value then
                 if table.find(Towers2, DungeonID) then
@@ -1740,22 +1870,51 @@ do
             if (drop.Type == 'Weapon' or drop.Type == 'Armor') and table.find(AutoSellTbl, tier:GetItemTier(c)) then
                 c:WaitForChild('Level')
                 task.wait(2)
-                Libary:Notify('Sold a Lvl ' .. c.Level.Value .. ' T' .. tier:GetItemTier(c) .. ' ' .. drop.DisplayKey)
+                Library:Notify('Sold a Lvl ' .. c.Level.Value .. ' T' .. tier:GetItemTier(c) .. ' ' .. drop.DisplayKey)
                 sell(c)
             end
         end)
     end
 end
 
-
+local StayInSpawn = true
+local safeVanePos = Vector3.new(-1700.391845703125, 1461.56591796875, -323.8279724121094)
+local safeVanePartExists
+local newPart
 Toggles.Autofarm:OnChanged(function()
 
     if InMission and Toggles.Autofarm.Value then
+        if MissionObjects:FindFirstChild('MissionStart') then
+            for i,v in pairs(MissionObjects.MissionStart:GetDescendants()) do
+                if v:IsA('TouchTransmitter') and v.Parent then
+                    v.Parent.CanCollide = false
+                    v.Parent.CFrame = CFrame.new(HumanoidRootPart.Position)
+                    break
+                end
+            end
+        end
+        if (Class == 'Demon') and (DungeonID == 44) then
+            --[[if not safeVanePartExists then
+                newPart = Instance.new('Part')
+                newPart.Anchored = true
+                newPart.Size =  Vector3.new(100,5,100)
+                newPart.Position = safeVanePos
+                newPart.Transparency = 1
+                newPart.Parent = workspace
+            end
+            PlayerTp(newPart.Position, 0, 15, 0)]]
+            task.spawn(function()
+                task.wait(2)
+                local vaneSafePos = Vector3.new(-1825.1507568359375, 1068.8070068359375, -255.45379638671875)
+                HumanoidRootPart.CFrame = CFrame.new(vaneSafePos + Vector3.new(0,10,0))
+            end)
+            return
+        end
         AntiFling()
         MobCounter()
     end
 
-    if (Class == 'Demon') and (DungeonID == 44) then
+    if (Class == 'Demon') and (DungeonID == 44) and StayInSpawn then
         return
     end
 
@@ -1802,13 +1961,6 @@ Toggles.Autofarm:OnChanged(function()
     if InTower and Toggles.Autofarm.Value then
         if not TowerIdleSpot then
             TowerIdleSpot = MissionObjects.WaveStarter.Position
-        end
-        if not MissionStarted then
-            local Start = game:GetService("Workspace").MissionObjects:WaitForChild('MissionStart', 3)
-            if Start then
-                Start.Collider.CFrame = CFrame.new(HumanoidRootPart.Position)
-                task.wait(1)
-            end
         end
         task.spawn(function() 
             while Toggles.Autofarm.Value do
@@ -2010,6 +2162,9 @@ Toggles.Killaura:OnChanged(function()
 
     -- ExtraRange and PerkSwitcher
     task.spawn(function()
+        if Class == 'Demon' and InMission then
+            return
+        end
         while Toggles.Killaura.Value do
             if BestMob and MobList:FindFirstChild(BestMob.Parent.Name) then
                 local CurrentMob = Mob(BestMob.Parent.Name)
@@ -2141,18 +2296,20 @@ Toggles.Killaura:OnChanged(function()
                         task.spawn(function()
                             local mobWait
                             while Toggles.Killaura.Value do
-                                for i = 1, Options.LifeStealInterval.Value do
-                                    for _, Mob in pairs(Mobs:GetChildren()) do
-                                        if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
-                                            if not (Mob.Name == v2.ignoreMob) then
+                                for _, Mob in pairs(Mobs:GetChildren()) do
+                                    if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+                                        if not (Mob.Name == v2.ignoreMob) then
+                                            for i = 1, Options.LifeStealInterval.Value do
                                                 LifeSteal:FireServer(table.create(3, Mob))
                                             end
-                                            if Mob.Name == v2.ignoreMob and MobCount and MobCount == 1 then
-                                                if not mobWait then
-                                                    task.wait(3)
-                                                    mobWait = true
-                                                end
-                                                if MobCount == 1 then
+                                        end
+                                        if Mob.Name == v2.ignoreMob and MobCount and MobCount == 1 then
+                                            if not mobWait then
+                                                task.wait(3)
+                                                mobWait = true
+                                            end
+                                            if MobCount == 1 then
+                                                for i = 1, Options.LifeStealInterval.Value do
                                                     LifeSteal:FireServer(table.create(3, Mob))
                                                 end
                                             end
@@ -2167,9 +2324,9 @@ Toggles.Killaura:OnChanged(function()
                 if not IgnoringMobs then
                     task.spawn(function()
                         while Toggles.Killaura.Value do
-                            for i = 1, Options.LifeStealInterval.Value do
-                                for _, Mob in pairs(Mobs:GetChildren()) do
-                                    if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+                            for _, Mob in pairs(Mobs:GetChildren()) do
+                                if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+                                    for i = 1, Options.LifeStealInterval.Value do
                                         LifeSteal:FireServer(table.create(3, Mob))
                                     end
                                 end
@@ -2183,19 +2340,19 @@ Toggles.Killaura:OnChanged(function()
             if InAtlantis then
                 task.spawn(function()
                     while not Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
-                        for i = 1, Options.LifeStealInterval.Value do
                             for _, Mob in pairs(Mobs:GetChildren()) do
                                 if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
-                                    LifeSteal:FireServer(table.create(3, Mob))
+                                    for i = 1, Options.LifeStealInterval.Value do
+                                        LifeSteal:FireServer(table.create(3, Mob))
+                                    end
                                 end
                             end
-                        end
                         task.wait()
                     end
                     while Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
-                        for i = 1, Options.LifeStealInterval.Value do
-                            for _, Mob in pairs(Mobs:GetChildren()) do
-                                if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+                        for _, Mob in pairs(Mobs:GetChildren()) do
+                            if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+                                for i = 1, Options.LifeStealInterval.Value do
                                     LifeSteal:FireServer(table.create(3, Mob))
                                 end
                             end
@@ -2333,15 +2490,4 @@ ThemeManager:ApplyToTab(Tabs['Settings'])
 -- which has been marked to be one that auto loads!
 if InMission then
     SaveManager:LoadAutoloadConfig()
-end
-
-if InDungeon then
-    PausePos = HumanoidRootPart.Position
-    for i,v in pairs(MissionObjects.MissionStart:GetDescendants()) do
-        if v.Name == "TouchInterest" and v.Parent then
-            v.Parent.CanCollide = false
-            v.Parent.CFrame = CFrame.new(HumanoidRootPart.Position)
-            break
-        end
-    end
 end
