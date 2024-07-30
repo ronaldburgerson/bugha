@@ -217,6 +217,20 @@ if Whitelisted then
     Shared.Missions.MissionStart.OnClientEvent:Once(function()
         MissionStarted = true
         dungeonStartTime = tick()
+        if Class == 'Demon' and DungeonID == 44 then
+            task.spawn(function()
+                while true do
+                    if tick()-dungeonStartTime >= 8 then
+                        if Options.LifeStealInterval.Value > 1 then
+                            Library:Notify('Reduced LifeSteal Repeats to 1 to avoid client lag')
+                            Options.LifeStealInterval:SetValue(1)
+                        end
+                        break
+                    end
+                    task.wait()
+                end
+            end)
+        end
     end)
     --if MarketplaceService:UserOwnsGamePassAsync(UserId, DoubleDrop) then
     --    ChestName = 'lol'
@@ -997,7 +1011,7 @@ if Whitelisted then
             Text = 'Life Steal Repeats',
             Default = 1,
             Min = 1,
-            Max = 10,
+            Max = 20,
             Rounding = 0,
             HideMax = true,
         })
@@ -1071,6 +1085,12 @@ if Whitelisted then
                 end
             end,
             DoubleClick = false
+        })
+
+        Farming:AddDivider()
+        Farming:AddToggle('stayInSpawnOnVane', {
+            Text = 'Stay In Spawn On Vane',
+            Default = false, -- Default value (true / false)
         })
     end
 
@@ -1916,11 +1936,13 @@ if Whitelisted then
                     newPart.Parent = workspace
                 end
                 PlayerTp(newPart.Position, 0, 15, 0)]]
-                task.spawn(function()
-                    task.wait(2)
-                    local vaneSafePos = Vector3.new(-1825.1507568359375, 1068.8070068359375, -255.45379638671875)
-                    HumanoidRootPart.CFrame = CFrame.new(vaneSafePos + Vector3.new(0,10,0))
-                end)
+                if not Toggles.stayInSpawnOnVane.Value then
+                    task.spawn(function()
+                        task.wait(2)
+                        local vaneSafePos = Vector3.new(-1825.1507568359375, 1068.8070068359375, -255.45379638671875)
+                        HumanoidRootPart.CFrame = CFrame.new(vaneSafePos + Vector3.new(0,10,0))
+                    end)
+                end
                 return
             end
             AntiFling()
