@@ -136,21 +136,18 @@ if Whitelisted then
     while true do
         if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild('HealthProperties') then
             HealthProperties = game.Players.LocalPlayer.Character.HealthProperties
-            print('HealthProperties Found')
             break
         end
         task.wait()
     end
-    task.spawn(function()
-        while true do
-            if not HealthProperties then
-                print('HealthProperties disappeared')
-                break
-            end
-            task.wait()
-        end
-    end)
     local HealthProperties = Character:WaitForChild('HealthProperties',10)
+    LocalPlayer.CharacterAdded:Connect(function(NewCharacter)
+        print('New Character Added')
+        Character = NewCharacter
+        HumanoidRootPart = Character:WaitForChild('HumanoidRootPart')
+        HealthProperties = Character:WaitForChild('HealthProperties')
+        Equipment = Character:WaitForChild('Equipment')
+    end)
     local KrakenArmCheck = true
     local UserId = LocalPlayer.UserId
     local MarketplaceService = game:GetService("MarketplaceService")
@@ -207,13 +204,6 @@ if Whitelisted then
     local tier = require(Shared.Inventory)
     Class1:GetPropertyChangedSignal("Value"):Connect(function()
         Class = Class1.Value
-    end)
-    LocalPlayer.CharacterAdded:Connect(function(NewCharacter)
-        print('New Character Added')
-        Character = NewCharacter
-        HumanoidRootPart = Character:WaitForChild('HumanoidRootPart')
-        HealthProperties = Character:WaitForChild('HealthProperties')
-        Equipment = Character:WaitForChild('Equipment')
     end)
     local dungeonStartTime = 0
     local dungeonEndTime = 0
@@ -1951,7 +1941,7 @@ if Whitelisted then
                         startedVaneSafeLoop = true
                         task.spawn(function()
                             while true do
-                                if HealthProperties.MaxHealth.Value - HealthProperties.Health.Value >= 10000 then
+                                if HealthProperties and HealthProperties.MaxHealth.Value - HealthProperties.Health.Value >= 10000 then
                                     print(HealthProperties.Health.Value,HealthProperties.MaxHealth.Value)
                                     if Toggles.Autofarm.Value then
                                         Library:Notify('Teleported to arena to avoid dying')
