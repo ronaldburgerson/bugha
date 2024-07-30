@@ -539,7 +539,7 @@ local ClassData = {
 
     Demon = {
         Range = 10,
-        Type = 'Ranged',
+        Type = 'Melee',
         Primary = 'Scythe',
         Skills = {
             --{ Skill = 'Demon1', Cooldown = 0.85 },
@@ -905,6 +905,10 @@ local ClassData = {
         Primary = 'Staff',
         Skills = {
             { Skill = 'MageOfShadows', Cooldown = 0.8 },
+            { Skill = 'MageOfShadowsBlast', Cooldown = 0.8 },
+            { Skill = 'BigShadowOrb1', Cooldown = 0.8 },
+            { Skill = 'BigShadowOrb2', Cooldown = 0.8 },
+            { Skill = 'BigShadowOrb3', Cooldown = 0.8 },
         }
     }
 }   
@@ -2316,7 +2320,7 @@ Toggles.Killaura:OnChanged(function()
                                         end
                                     end
                                 end
-                                task.wait()
+                                task.wait(Options.KillauraDelay.Value)
                             end
                         end)
                     end
@@ -2331,7 +2335,7 @@ Toggles.Killaura:OnChanged(function()
                                     end
                                 end
                             end
-                            task.wait()
+                            task.wait(Options.KillauraDelay.Value)
                         end
                     end)
                 end
@@ -2347,7 +2351,7 @@ Toggles.Killaura:OnChanged(function()
                                     end
                                 end
                             end
-                        task.wait()
+                        task.wait(Options.KillauraDelay.Value)
                     end
                     while Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
                         for _, Mob in pairs(Mobs:GetChildren()) do
@@ -2357,7 +2361,7 @@ Toggles.Killaura:OnChanged(function()
                                 end
                             end
                         end
-                        task.wait()
+                        task.wait(Options.KillauraDelay.Value)
                     end
                 end)
             end
