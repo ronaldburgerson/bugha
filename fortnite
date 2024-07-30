@@ -1669,10 +1669,10 @@ if Whitelisted then
                     local vaneraids = game:GetService("ReplicatedStorage").Shared.LeaderboardHookup.GetScore:InvokeServer("VANE_KILLS",1)
                     local newStr
                     if DungeonID == 44 then
-                        newStr = name .. " " .. v1 .. " " .. dungname .. " in " .. "**" .. math.round((dungeonEndTime-dungeonStartTime)/0.1) / 10 .. "s** with " .. Class .. " at " .. GetTime()
+                        newStr = name .. " " .. v1 .. " " .. dungname .. " in " .. "**" .. math.round((dungeonEndTime-dungeonStartTime)/0.1) / 10 .. "s** with " .. Class
                         .. '\nVane Raids Completed Total: **' .. vaneraids[1] .. '**\nVane Raids Completed Daily: ' .. '**' .. vaneraids[2] .. '**'
                     else
-                        newStr = name .. " " .. v1 .. " " .. dungname .. " in " .. "**" .. math.round((dungeonEndTime-dungeonStartTime)/0.1) / 10 .. "s** with " .. Class .. " at " .. GetTime()
+                        newStr = name .. " " .. v1 .. " " .. dungname .. " in " .. "**" .. math.round((dungeonEndTime-dungeonStartTime)/0.1) / 10 .. "s** with " .. Class
                     end
                     request({
                         Url = newLink,
@@ -1686,6 +1686,9 @@ if Whitelisted then
                                 ["description"] = newStr,
                                 ["type"] = 'rich',
                                 ["color"] = tonumber(v2),
+                                ["footer"] = {
+                                    ["text"] = GetTime() .. ' UTC',
+                                },
                             }}
                         })
                     })
