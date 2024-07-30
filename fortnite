@@ -1913,6 +1913,7 @@ if Whitelisted then
     local StayInSpawn = true
     local safeVanePos = Vector3.new(-1700.391845703125, 1461.56591796875, -323.8279724121094)
     local safeVanePartExists
+    local startedVaneSafeLoop
     local newPart
     Toggles.Autofarm:OnChanged(function()
 
@@ -1942,6 +1943,23 @@ if Whitelisted then
                         local vaneSafePos = Vector3.new(-1825.1507568359375, 1068.8070068359375, -255.45379638671875)
                         HumanoidRootPart.CFrame = CFrame.new(vaneSafePos + Vector3.new(0,10,0))
                     end)
+                else
+                    if not startedVaneSafeLoop then
+                        startedVaneSafeLoop = true
+                        task.spawn(function()
+                            while true do
+                                if HealthProperties.Health.Value < HealthProperties.MaxHealth.Value then
+                                    if Toggles.Autofarm.Value then
+                                        Library:Notify('Teleported to arena to avoid dying')
+                                        local vaneSafePos = Vector3.new(-1825.1507568359375, 1068.8070068359375, -255.45379638671875)
+                                        HumanoidRootPart.CFrame = CFrame.new(vaneSafePos + Vector3.new(0,10,0))
+                                    end
+                                    break
+                                end
+                                task.wait()
+                            end
+                        end)
+                    end
                 end
                 return
             end
