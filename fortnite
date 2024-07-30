@@ -17,7 +17,10 @@ if Whitelisted then
     local SafeZone
     local Players = game:GetService('Players')
     local LocalPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal('LocalPlayer'):Wait() or Players.LocalPlayer
-    local ownsDoubleDrop = game:GetService("MarketplaceService"):UserOwnsGamePassAsync(LocalPlayer.UserId, 8136250)
+    local ownsDoubleDrop = false
+    pcall(function()
+        ownsDoubleDrop = game:GetService("MarketplaceService"):UserOwnsGamePassAsync(LocalPlayer.UserId, 8136250)
+    end)
     local VirtualUser = game:GetService('VirtualUser')
     LocalPlayer.Idled:Connect(function()
         VirtualUser:CaptureController()
