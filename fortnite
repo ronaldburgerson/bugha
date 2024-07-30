@@ -141,6 +141,7 @@ if Whitelisted then
         task.wait()
     end
     local HealthProperties = Character:WaitForChild('HealthProperties',10)
+    local Equipment
     LocalPlayer.CharacterAdded:Connect(function(NewCharacter)
         print('New Character Added')
         Character = NewCharacter
@@ -162,7 +163,7 @@ if Whitelisted then
     local Class1 = Profile:WaitForChild("Class")
     local Class = Class1.Value
     local GetMissionChest = Shared.Missions.GetMissionPrize
-    local Equipment = Character.Equipment
+    Equipment = Character.Equipment
     local Skillsets = Shared:WaitForChild('Combat'):WaitForChild('Skillsets')
     local RangedClassRange = 60
     local MeleeClassRange = 18
