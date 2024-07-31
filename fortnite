@@ -1926,11 +1926,14 @@ if Whitelisted then
             if MissionObjects:FindFirstChild('MissionStart') then
                 for i,v in pairs(MissionObjects.MissionStart:GetDescendants()) do
                     if v:IsA('TouchTransmitter') and v.Parent then
+                        print('Mission Started')
                         v.Parent.CanCollide = false
                         v.Parent.CFrame = CFrame.new(HumanoidRootPart.Position)
                         break
                     end
                 end
+            else
+                print('MissionStart not found!')
             end
             if (Class == 'Demon' or Class == 'MageOfShadows') and (DungeonID == 44) then
                 --[[if not safeVanePartExists then
