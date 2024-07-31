@@ -936,6 +936,10 @@ if Whitelisted then
     Folder.Name = 'SummonFolder'
     Folder.Parent = Workspace
 
+    local mageOfShadowBodies = Instance.new('Folder')
+    mageOfShadowBodies.Name = 'Mageofshadowgood'
+    mageOfShadowBodies.Parent = Workspace
+
 
     local function loadFromCacheOrGithub(url, filename)
         local success, content = pcall(function()
@@ -1085,6 +1089,13 @@ if Whitelisted then
         Farming:AddToggle('stayInSpawnOnVane', {
             Text = 'Stay In Spawn On Vane',
             Default = false, -- Default value (true / false)
+        })
+        Farming:AddInput('shadowChainDmg', {
+            Numeric = true, -- true / false, only allows numbers
+            Finished = true, -- true / false, only calls callback when you press enter
+            Default = 33000,
+            Text = 'Shadow Chains Tick',
+            Tooltip = 'Put your Shadow Chains tick damage to dummies here or to specific enemies like raid bosses',
         })
     end
 
@@ -1921,7 +1932,7 @@ if Whitelisted then
                     end
                 end
             end
-            if (Class == 'Demon') and (DungeonID == 44) then
+            if (Class == 'Demon' or Class == 'MageOfShadows') and (DungeonID == 44) then
                 --[[if not safeVanePartExists then
                     newPart = Instance.new('Part')
                     newPart.Anchored = true
@@ -1938,12 +1949,11 @@ if Whitelisted then
                         HumanoidRootPart.CFrame = CFrame.new(vaneSafePos + Vector3.new(0,10,0))
                     end)
                 else
-                    if not startedVaneSafeLoop then
+                    if not startedVaneSafeLoop and not (Class == 'MageOfShadows') then
                         startedVaneSafeLoop = true
                         task.spawn(function()
                             while true do
                                 if HealthProperties and HealthProperties.MaxHealth.Value - HealthProperties.Health.Value >= 10000 then
-                                    print(HealthProperties.Health.Value,HealthProperties.MaxHealth.Value)
                                     if Toggles.Autofarm.Value then
                                         Library:Notify('Teleported to arena to avoid dying')
                                         local vaneSafePos = Vector3.new(-1825.1507568359375, 1068.8070068359375, -255.45379638671875)
@@ -1962,9 +1972,11 @@ if Whitelisted then
             MobCounter()
         end
 
-        if (Class == 'Demon') and (DungeonID == 44) and StayInSpawn then
+        if (Class == 'Demon' or Class == 'MageOfShadows') and (DungeonID == 44) and StayInSpawn then
             return
         end
+
+
 
         -- Autofarm
         if InDungeon and Toggles.Autofarm.Value then
@@ -2210,7 +2222,7 @@ if Whitelisted then
 
         -- ExtraRange and PerkSwitcher
         task.spawn(function()
-            if Class == 'Demon' and InMission then
+            if (Class == 'Demon' or Class == 'MageOfShadows') and InMission then
                 return
             end
             while Toggles.Killaura.Value do
@@ -2263,6 +2275,9 @@ if Whitelisted then
 
         -- Killaura
         task.spawn(function()
+            if (Class == 'Demon' or Class == 'MageOfShadows') and InMission then
+                return
+            end
             while Toggles.Killaura.Value do
                 if BestMob and Character:FindFirstChild('Properties') and not (Character.Properties:GetAttribute('Mounted')) 
                 and HealthProperties:FindFirstChild('Health') and HealthProperties.Health.Value > 0 then
@@ -2460,6 +2475,36 @@ if Whitelisted then
                         and Summon.HealthProperties.Health.Value/Summon.HealthProperties.MaxHealth.Value < 0.25 then
                             Skillsets.Summoner.ExplodeSummons:FireServer()
                         end
+                    end
+                    task.wait()
+                end
+            end)
+        end
+
+        -- MageOfShadow
+        if Class == 'MageOfShadows' and Toggles.Killaura.Value and InMission then
+            
+            task.spawn(function()
+                while Toggles.Killaura.Value do
+                    local attackTbl = {}
+                    local movingTbl = {}
+                    for _, Mob in pairs(Workspace.Mobs:GetChildren()) do
+                        local MeshPart = Mob.PrimaryPart
+                        if MeshPart and Mob:FindFirstChild('HealthProperties') and Mob.HealthProperties:FindFirstChild('Health') and Mob.HealthProperties.Health.Value > 0 then
+                            local intervals = math.ceil(Mob.HealthProperties.Health.Value / (Options.shadowChainDmg.Value or 30000))
+                            for i = 1,intervals do
+                                table.insert(attackTbl, Mob)
+                            end
+                            table.insert(movingTbl, Mob)
+                        end
+                    end
+                    if #attackTbl > 0 then
+                        print('Launching Attack ' .. #attackTbl .. ' times')
+                        game:GetService("ReplicatedStorage").Shared.Combat.Skillsets.MageOfShadows.ShadowChains:FireServer(attackTbl)
+                        for i,v in pairs(movingTbl) do
+                            if v then v.Parent = mageOfShadowBodies end
+                        end
+                        task.wait(3)
                     end
                     task.wait()
                 end
