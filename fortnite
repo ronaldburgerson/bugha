@@ -1043,6 +1043,17 @@ if Whitelisted then
             Default = false, -- Default value (true / false)
         })
 
+        Farming:AddSlider('restartTimer', {
+            Text = 'Restart Dungeon After',
+            Default = 3,
+            Min = 3,
+            Max = 200,
+            Rounding = 0,
+            HideMax = true,
+            Suffix = ' seconds',
+        })
+
+
         Farming:AddToggle('NextDungeon', {
             Text = 'Next Dungeon',
             Default = false, -- Default value (true / false)
@@ -1752,7 +1763,7 @@ if Whitelisted then
                     GetMissionChest:InvokeServer()
                     GetMissionChest:InvokeServer()
                 end
-                task.wait(3)
+                task.wait(Options.restartTimer.Value)
                 if Toggles.RestartDungeon.Value and Toggles.Autofarm.Value then
                     StartRaid(DungeonID, DifficultyID)
                 elseif Toggles.NextDungeon.Value and Toggles.Autofarm.Value then
