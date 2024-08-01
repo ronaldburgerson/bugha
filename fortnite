@@ -109,6 +109,7 @@ if Whitelisted then
     local InAtlantis = false
     local InTower = false
     local InInfiniteTower = false
+    local DungeonCompleted
     local OldPosition
     local TempCheck = false
     if ReplicatedStorage:FindFirstChild("ActiveMission") then
@@ -1764,7 +1765,7 @@ if Whitelisted then
         if InDungeon then
             Shared.Missions.MissionFinished.OnClientEvent:Once(function()
                 dungeonEndTime = tick()
-
+                DungeonCompleted = true
                 Inventory.ChildAdded:Connect(function(c)
                     local drop = items[c.Name]
                     if (drop.Type == 'Weapon' or drop.Type == 'Armor') and table.find(AutoSellTbl, tier:GetItemTier(c)) then
@@ -2533,8 +2534,9 @@ if Whitelisted then
         -- Dungeon restart timeout if no damage done in specified time minutes
         if InMission then
             task.spawn(function()
-                while Toggles.Killaura.Value do
-                    if tick()-lastAttackTime >= Options.timeoutTimer.Value and tick()-lastAttackTime >= Options.restartTimer.Value and Toggles.Autofarm.Value then
+                while Toggles.Killaura.Value and not DungeonCompleted do
+                    local timeoutTime = tick()-lastAttackTime
+                    if timeoutTime >= Options.timeoutTimer.Value and Toggles.Autofarm.Value then
                         Library:Notify('Timeout! Force restarting dungeon!')
                         StartRaid(DungeonID, DifficultyID)
                         break
