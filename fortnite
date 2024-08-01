@@ -1053,6 +1053,18 @@ if Whitelisted then
             Suffix = ' seconds',
         })
 
+        Farming:AddSlider('timeoutTimer', {
+            Text = 'Dungeon Timeout',
+            Default = 120,
+            Min = 30,
+            Max = 300,
+            Rounding = 0,
+            HideMax = true,
+            Suffix = ' seconds',
+            Tooltip = 'Restart dungeon if no damage has done within the specified time period',
+        })
+
+
 
         Farming:AddToggle('NextDungeon', {
             Text = 'Next Dungeon',
@@ -1737,10 +1749,12 @@ if Whitelisted then
             task.spawn(function()
                 repeat wait() until end1.Text == y or end1.Text == y2
                 msg("failed",colorTbl.Red)
+                StartRaid(DungeonID, DifficultyID)
             end)
             task.spawn(function()
                 repeat wait() until end1.Text == z
                 msg("failed",colorTbl.Red)
+                StartRaid(DungeonID, DifficultyID)
             end)
             TowerEnd:GetPropertyChangedSignal("Text"):Once(function()
                 msg("completed",colorTbl.Green)
@@ -2171,11 +2185,12 @@ if Whitelisted then
 
     -- Killaura Miscellaneous
     do
-        function GetClosestMob()
+        -- GetClosestMob
+        function getClosestMob()
             local Targets = {}
             for _, Mob in pairs(Workspace.Mobs:GetChildren()) do
                 local MeshPart = Mob.PrimaryPart
-                if MeshPart and Mob:FindFirstChild('HealthProperties') and Mob.HealthProperties:FindFirstChild('Health') and Mob.HealthProperties.Health.Value > 0 then
+                if MeshPart and Mob:FindFirstChild('HealthProperties') and Mob.HealthProperties.Health.Value > 0 then
                     table.insert(Targets, MeshPart)
                 end
             end
@@ -2184,8 +2199,9 @@ if Whitelisted then
                 Target2 = (Target2.Position - HumanoidRootPart.Position).Magnitude
                 return Target1 < Target2
             end)
-            return Targets[1] 
+            return Targets[1]    
         end
+
         -- TargetDummies to mobs folder
         if Workspace:FindFirstChild('TargetDummies') then
             for _, Dummy in pairs(Workspace.TargetDummies:GetChildren()) do
@@ -2211,28 +2227,8 @@ if Whitelisted then
     Toggles.Killaura:OnChanged(function()
         local LifeSteal = Skillsets.Demon.LifeSteal
         local ExtraRange = 0
+        local lastAttackTime = tick()
 
-        -- GetClosestMob
-        task.spawn(function()
-            if not InAtlantis then 
-                while Toggles.Killaura.Value do
-                    local Targets = {}
-                    for _, Mob in pairs(Workspace.Mobs:GetChildren()) do
-                        local MeshPart = Mob.PrimaryPart
-                        if MeshPart and Mob:FindFirstChild('HealthProperties') and Mob.HealthProperties.Health.Value > 0 then
-                            table.insert(Targets, MeshPart)
-                        end
-                    end
-                    table.sort(Targets, function(Target1, Target2)
-                        Target1 = (Target1.Position - HumanoidRootPart.Position).Magnitude
-                        Target2 = (Target2.Position - HumanoidRootPart.Position).Magnitude
-                        return Target1 < Target2
-                    end)
-                    BestMob = Targets[1]    
-                    task.wait() 
-                end
-            end
-        end)
 
         -- ExtraRange and PerkSwitcher
         task.spawn(function()
@@ -2293,6 +2289,7 @@ if Whitelisted then
                 return
             end
             while Toggles.Killaura.Value do
+                BestMob = getClosestMob()
                 if BestMob and Character:FindFirstChild('Properties') and not (Character.Properties:GetAttribute('Mounted')) 
                 and HealthProperties:FindFirstChild('Health') and HealthProperties.Health.Value > 0 then
                     for _, SkillData in pairs(ClassData[Class].Skills) do
@@ -2308,14 +2305,16 @@ if Whitelisted then
                                 elseif SkillData.Args == 'MobPosition' then
                                     Attack:FireServer(SkillData.Skill, BestMob.Position)
                                     SkillData.LastUsed = tick()
-                                else
+                                else -- Main Melee attack
                                     Attack:FireServer(SkillData.Skill, HumanoidRootPart.Position, CFrame.new(HumanoidRootPart.Position, BestMob.Position).LookVector)
                                     SkillData.LastUsed = tick()
                                 end
+                                lastAttackTime = tick()
                             elseif SkillType == 'Ranged' and (BestMob.Position-HumanoidRootPart.Position).magnitude <= SkillRange
                             and BestMob.Parent.HealthProperties.Health.Value > 0 then
                                 Attack:FireServer(SkillData.Skill, BestMob.Position)
                                 SkillData.LastUsed = tick()
+                                lastAttackTime = tick()
                             elseif SkillType == 'Remote' and (BestMob.Position-HumanoidRootPart.Position).magnitude <= SkillRange then
                                 if SkillData.Args == 'MobPosition' then
                                     SkillData.Skill:FireServer(BestMob.Position)
@@ -2324,6 +2323,7 @@ if Whitelisted then
                                     SkillData.Skill:FireServer()
                                     SkillData.LastUsed = tick()
                                 end 
+                                lastAttackTime = tick()
                             elseif SkillType == 'Heal' then
                                 if HealthProperties.Health.Value/HealthProperties.MaxHealth.Value < 0.6 then
                                     if SkillData.Args then
@@ -2345,7 +2345,7 @@ if Whitelisted then
         -- MissionObjects moving to mobs folder
         if InMission and not MissionScripts:FindFirstChild(36) then
             task.spawn(function()
-                while true do
+                while Toggles.Killaura.Value do
                     for i,v in pairs(MissionObjects:GetChildren()) do
                         if v:FindFirstChild("HealthProperties") and not table.find(ignoreObjects, v.Name) then
                             v.Parent = Mobs
@@ -2376,6 +2376,7 @@ if Whitelisted then
                                     for _, Mob in pairs(Mobs:GetChildren()) do
                                         if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
                                             if not (Mob.Name == v2.ignoreMob) then
+                                                lastAttackTime = tick()
                                                 for i = 1, Options.LifeStealInterval.Value do
                                                     LifeSteal:FireServer(table.create(3, Mob))
                                                 end
@@ -2386,6 +2387,7 @@ if Whitelisted then
                                                     mobWait = true
                                                 end
                                                 if MobCount == 1 then
+                                                    lastAttackTime = tick()
                                                     for i = 1, Options.LifeStealInterval.Value do
                                                         LifeSteal:FireServer(table.create(3, Mob))
                                                     end
@@ -2403,6 +2405,7 @@ if Whitelisted then
                             while Toggles.Killaura.Value do
                                 for _, Mob in pairs(Mobs:GetChildren()) do
                                     if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+                                        lastAttackTime = tick()
                                         for i = 1, Options.LifeStealInterval.Value do
                                             LifeSteal:FireServer(table.create(3, Mob))
                                         end
@@ -2412,13 +2415,13 @@ if Whitelisted then
                             end
                         end)
                     end
-
                 end
                 if InAtlantis then
                     task.spawn(function()
                         while not Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
                                 for _, Mob in pairs(Mobs:GetChildren()) do
                                     if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+                                        lastAttackTime = tick()
                                         for i = 1, Options.LifeStealInterval.Value do
                                             LifeSteal:FireServer(table.create(3, Mob))
                                         end
@@ -2429,6 +2432,7 @@ if Whitelisted then
                         while Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
                             for _, Mob in pairs(Mobs:GetChildren()) do
                                 if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+                                    lastAttackTime = tick()
                                     for i = 1, Options.LifeStealInterval.Value do
                                         LifeSteal:FireServer(table.create(3, Mob))
                                     end
@@ -2506,6 +2510,7 @@ if Whitelisted then
                         local MeshPart = Mob.PrimaryPart
                         if MeshPart and Mob:FindFirstChild('HealthProperties') and Mob.HealthProperties:FindFirstChild('Health') and Mob.HealthProperties.Health.Value > 0 then
                             local intervals = math.ceil(Mob.HealthProperties.Health.Value / (Options.shadowChainDmg.Value or 30000))
+                            lastAttackTime = tick()
                             for i = 1,intervals do
                                 table.insert(attackTbl, Mob)
                             end
@@ -2521,6 +2526,20 @@ if Whitelisted then
                         task.wait(3)
                     end
                     task.wait()
+                end
+            end)
+        end
+
+        -- Dungeon restart timeout if no damage done in specified time minutes
+        if InMission then
+            task.spawn(function()
+                while Toggles.Killaura.Value do
+                    if tick()-lastAttackTime >= Options.timeoutTimer.Value and tick()-lastAttackTime >= Options.restartTimer.Value and Toggles.Autofarm.Value then
+                        Library:Notify('Timeout! Force restarting dungeon!')
+                        StartRaid(DungeonID, DifficultyID)
+                        break
+                    end
+                    task.wait(1)
                 end
             end)
         end
