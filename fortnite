@@ -422,6 +422,7 @@ local DungeonData = {
 
 local ClassData = {
     Assassin = {
+        DisplayName = 'Shadowblade',
         Range = 12,
         Type = 'Melee',
         Primary = 'Longsword',
@@ -450,6 +451,7 @@ local ClassData = {
     },
 
     MageOfLight = {
+        DisplayName = 'Mage Of Light',
         Range = 96,
         Type = 'Ranged',
         Primary = 'Staff',
@@ -465,6 +467,7 @@ local ClassData = {
     },
 
     Warlord = {
+        DisplayName = 'Warlord',
         Range = 14,
         Type = 'Ranged',
         Primary = 'Greataxe',
@@ -488,6 +491,7 @@ local ClassData = {
     },
 
     Paladin = {
+        DisplayName = 'Paladin',
         Range = 14,
         Type = 'Melee',
         Primary = 'Longsword',
@@ -508,6 +512,7 @@ local ClassData = {
     },
 
     Berserker = {
+        DisplayName = 'Berserker',
         Range = 14,
         Type = 'Melee',
         Primary = 'Greataxe',
@@ -543,6 +548,7 @@ local ClassData = {
     },
 
     Guardian = {
+        DisplayName = 'Guardian',
         Range = 18,
         Type = 'Ranged',
         Primary = 'Greatsword',
@@ -579,6 +585,7 @@ local ClassData = {
     },
 
     Demon = {
+        DisplayName = 'Demon',
         Range = 10,
         Type = 'Melee',
         Primary = 'Scythe',
@@ -640,6 +647,7 @@ local ClassData = {
     },
 
     Swordmaster = {
+        DisplayName = 'Swordmaster',
         Range = 12,
         Type = 'Melee',
         Primary = 'Longsword',
@@ -660,6 +668,7 @@ local ClassData = {
     },
 
     Mage = {
+        DisplayName = 'Arcane Mage',
         Range = 62,
         Type = 'Ranged',
         Primary = 'Staff',
@@ -685,6 +694,7 @@ local ClassData = {
     },
 
     Defender = {
+        DisplayName = 'Defender',
         Range = 12,
         Type = 'Melee',
         Primary = 'Greataxe',
@@ -703,6 +713,7 @@ local ClassData = {
     },
 
     DualWielder = {
+        DisplayName = 'Dual Wielder',
         Range = 12,
         Type = 'Melee',
         Primary = 'Longsword',
@@ -763,6 +774,7 @@ local ClassData = {
     },
 
     IcefireMage = {
+        DisplayName = 'Elementalist',
         Range = 93,
         Type = 'Ranged',
         Primary = 'Staff',
@@ -798,6 +810,7 @@ local ClassData = {
     },
 
     Dragoon = {
+        DisplayName = 'Dragoon',
         Range = 12,
         Type = 'Ranged',
         Primary = 'Spear',
@@ -852,6 +865,7 @@ local ClassData = {
     },
 
     Archer = {
+        DisplayName = 'Archer',
         Range = 93,
         Type = 'Ranged',
         Primary = 'Bow',
@@ -885,6 +899,7 @@ local ClassData = {
     },
 
     Summoner = {
+        DisplayName = 'Summoner',
         Range = 82,
         Type = 'Ranged',
         Primary = 'Staff',
@@ -906,6 +921,7 @@ local ClassData = {
     },
 
     Necromancer = {
+        DisplayName = 'Necromancer',
         Range = 14,
         Type = 'Melee',
         Primary = 'Scythe',
@@ -941,6 +957,7 @@ local ClassData = {
     },
 
     MageOfShadows = {
+        DisplayName = 'Mage Of Shadows',
         Range = 14,
         Type = 'Ranged',
         Primary = 'Staff',
@@ -1752,7 +1769,7 @@ do
         function msg(status, color, time)  
             local newLink = Options.dungeonHook.Value
             if newLink and #newLink > 30 then
-                local completionStr =  'Mission: ``' .. dungname .. '``\nTime: **' .. math.round(time/0.1) / 10 .. 's**\n' .. plrLink
+                local completionStr =  'Mission: ``' .. dungname .. '``\nTime: **' .. math.round(time/0.1) / 10 .. 's**\nClass: ' .. '``' .. ClassData[Class].DisplayName .. '``\nUser: ' .. plrLink
                 if DungeonID == 44 then
                     local vaneraids = game:GetService("ReplicatedStorage").Shared.LeaderboardHookup.GetScore:InvokeServer("VANE_KILLS",1)
                     completionStr = completionStr .. '\nVane Raids Completed Total: **' .. vaneraids[1] .. '**\nVane Raids Completed Daily: ' .. '**' .. vaneraids[2] .. '**'
