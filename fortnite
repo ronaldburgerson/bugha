@@ -1,7 +1,7 @@
 if game.gameId ~= 985731078 then
     return
 end
-print('Infinite | World Zero v3')
+print('Infinite | World Zero v4')
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
@@ -42,6 +42,7 @@ local Shared = ReplicatedStorage:WaitForChild('Shared')
 local TeleportService = game:GetService('TeleportService')
 local SafePart
 local SafeZone
+local TeleportingToMob = true
 local Players = game:GetService('Players')
 local LocalPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal('LocalPlayer'):Wait() or Players.LocalPlayer
 local ownsDoubleDrop = false
@@ -56,6 +57,7 @@ end)
 local PlayerName = LocalPlayer.Name
 local WorldZeroID = 2727067538
 local MissionStarted = false
+local PauseAutoCheckpoint = false
 local TowerIdleSpot
 local KickTbl = {
     Kicked = false,
@@ -239,20 +241,6 @@ local dungeonEndTime = 0
 Shared.Missions.MissionStart.OnClientEvent:Once(function()
     MissionStarted = true
     dungeonStartTime = tick()
-    if Class == 'Demon' and DungeonID == 44 then
-        task.spawn(function()
-            while true do
-                if tick()-dungeonStartTime >= 8 then
-                    if Options.LifeStealInterval.Value > 1 then
-                        Library:Notify('Reduced LifeSteal Repeats to 1 to avoid client lag')
-                        Options.LifeStealInterval:SetValue(1)
-                    end
-                    break
-                end
-                task.wait()
-            end
-        end)
-    end
 end)
 --if MarketplaceService:UserOwnsGamePassAsync(UserId, DoubleDrop) then
 --    ChestName = 'lol'
@@ -320,7 +308,14 @@ local checkpointTbl = {
     'MiddleElevatorTrigger',
     'TopElevatorTrigger',
     'ObbyTrigger5',
+    'WaveStarter',
+    'BossDoorTrigger',
+    'MinibossExit',
 }
+if DungeonID and DungeonID == 43 then
+    table.remove(checkpointTbl, table.find(checkpointTbl, 'WaveStarter'))
+    print('removed')
+end
 local ignoreObjects = {
     'Scarecrow1', 
     'Scarecrow2', 
@@ -335,6 +330,8 @@ local mobIgnoreTbl = {
     AetherFortress = { Id = 33, ignoreMob = 'BOSSTreeEnt' },
     MamaTrauma = { Id = 12, ignoreMob = 'BOSSMamaQuillodile' },
     TheUnderworld = { Id = 26, ignoreMob = 'HadesCerberus' },
+    VaneEvent = { Id = 44, ignoreMob = 'EVENTBOSSVane' },
+    ArcaneTower = { Id = 43, ignoreMob = 'BOSSKandrix'}
 }
 local TotalWorlds = 15
 local WorldData = {
@@ -590,59 +587,59 @@ local ClassData = {
         Type = 'Melee',
         Primary = 'Scythe',
         Skills = {
-            --{ Skill = 'Demon1', Cooldown = 0.85 },
-            --{ Skill = 'Demon2', Cooldown = 0.85 },
-            --{ Skill = 'Demon3', Cooldown = 0.85 },
-            --{ Skill = 'Demon4', Cooldown = 1.2 },
-            --{ Skill = 'Demon5', Cooldown = 1.2 },
-            --{ Skill = 'Demon6', Cooldown = 1.2 },
-            --{ Skill = 'Demon7', Cooldown = 1.5 },
-            --{ Skill = 'Demon8', Cooldown = 1.5 },
-            --{ Skill = 'Demon9', Cooldown = 1.5 },
-            --{ Skill = 'Demon10', Cooldown = 1.85 },
-            --{ Skill = 'Demon11', Cooldown = 1.85 },
-            --{ Skill = 'Demon12', Cooldown = 1.85 },
-            --{ Skill = 'Demon13', Cooldown = 2.15 },
-            --{ Skill = 'Demon14', Cooldown = 2.15 },
-            --{ Skill = 'Demon15', Cooldown = 2.15 },
-            --{ Skill = 'Demon16', Cooldown = 2.55 },
-            --{ Skill = 'Demon17', Cooldown = 2.55 },
-            --{ Skill = 'Demon18', Cooldown = 2.55 },
-            --{ Skill = 'Demon19', Cooldown = 2.85 },
-            --{ Skill = 'Demon20', Cooldown = 2.85 },
-            --{ Skill = 'Demon21', Cooldown = 2.85 },
-            --{ Skill = 'Demon22', Cooldown = 3.2 },
-            --{ Skill = 'Demon23', Cooldown = 3.2 }, 
-            --{ Skill = 'Demon24', Cooldown = 3.2 }, 
-            --{ Skill = 'Demon25', Cooldown = 3.5 }, 
-            --{ Skill = 'Demon26', Cooldown = 3.5 }, 
-            --{ Skill = 'Demon27', Cooldown = 3.5 }, 
-        -- { Skill = 'DemonDPS1', Cooldown = 0.85, Range = 12 },
-            --{ Skill = 'DemonDPS2', Cooldown = 1.2, Range = 12 },
-            --{ Skill = 'DemonDPS3', Cooldown = 1.5, Range = 12 },
-            --{ Skill = 'DemonDPS4', Cooldown = 1.85, Range = 12 },
-            --{ Skill = 'DemonDPS5', Cooldown = 2.15, Range = 12 },
-            --{ Skill = 'DemonDPS6', Cooldown = 2.55, Range = 12 },
-            --{ Skill = 'DemonDPS7', Cooldown = 2.9, Range = 12 },
-            --{ Skill = 'DemonDPS8', Cooldown = 3.3, Range = 12 },
-            --{ Skill = 'DemonDPS9', Cooldown = 3.6, Range = 12 },
-            --{ Skill = 'ScytheThrowDPS1', Cooldown = 5.5, Type = 'Ranged', Range = 71 },
-            --{ Skill = 'ScytheThrowDPS2', Cooldown = 5.5, Type = 'Ranged', Range = 71 },
-            --{ Skill = 'ScytheThrowDPS3', Cooldown = 5.5, Type = 'Ranged', Range = 71 },
-            --{ Skill = 'ScytheThrow1', Cooldown = 5.5, Type = 'Ranged', Range = 88 },
-            --{ Skill = 'ScytheThrow2', Cooldown = 5.5, Type = 'Ranged', Range = 88 },
-            --{ Skill = 'ScytheThrow3', Cooldown = 5.5, Type = 'Ranged', Range = 88 },
-            --{ Skill = 'ScytheThrow4', Cooldown = 5.5, Type = 'Ranged', Range = 88 },
-            --{ Skill = 'ScytheThrow5', Cooldown = 5.5, Type = 'Ranged', Range = 88 },
-            --{ Skill = 'ScytheThrow6', Cooldown = 5.5, Type = 'Ranged', Range = 88 },
-            --{ Skill = 'ScytheThrow7', Cooldown = 5.5, Type = 'Ranged', Range = 88 },
-            --{ Skill = 'ScytheThrow8', Cooldown = 5.5, Type = 'Ranged', Range = 88 },
-            --{ Skill = 'DemonLifeStealDPS', Cooldown = 8.2, Type = 'Ranged', Range = 56 },
+            { Skill = 'Demon1', Cooldown = 0.85 },
+            { Skill = 'Demon2', Cooldown = 0.85 },
+            { Skill = 'Demon3', Cooldown = 0.85 },
+            { Skill = 'Demon4', Cooldown = 1.2 },
+            { Skill = 'Demon5', Cooldown = 1.2 },
+            { Skill = 'Demon6', Cooldown = 1.2 },
+            { Skill = 'Demon7', Cooldown = 1.5 },
+            { Skill = 'Demon8', Cooldown = 1.5 },
+            { Skill = 'Demon9', Cooldown = 1.5 },
+            { Skill = 'Demon10', Cooldown = 1.85 },
+            { Skill = 'Demon11', Cooldown = 1.85 },
+            { Skill = 'Demon12', Cooldown = 1.85 },
+            { Skill = 'Demon13', Cooldown = 2.15 },
+            { Skill = 'Demon14', Cooldown = 2.15 },
+            { Skill = 'Demon15', Cooldown = 2.15 },
+            { Skill = 'Demon16', Cooldown = 2.55 },
+            { Skill = 'Demon17', Cooldown = 2.55 },
+            { Skill = 'Demon18', Cooldown = 2.55 },
+            { Skill = 'Demon19', Cooldown = 2.85 },
+            { Skill = 'Demon20', Cooldown = 2.85 },
+            { Skill = 'Demon21', Cooldown = 2.85 },
+            { Skill = 'Demon22', Cooldown = 3.2 },
+            { Skill = 'Demon23', Cooldown = 3.2 }, 
+            { Skill = 'Demon24', Cooldown = 3.2 }, 
+            { Skill = 'Demon25', Cooldown = 3.5 }, 
+            { Skill = 'Demon26', Cooldown = 3.5 }, 
+            { Skill = 'Demon27', Cooldown = 3.5 }, 
+            { Skill = 'DemonDPS1', Cooldown = 0.85, Range = 12 },
+            { Skill = 'DemonDPS2', Cooldown = 1.2, Range = 12 },
+            { Skill = 'DemonDPS3', Cooldown = 1.5, Range = 12 },
+            { Skill = 'DemonDPS4', Cooldown = 1.85, Range = 12 },
+            { Skill = 'DemonDPS5', Cooldown = 2.15, Range = 12 },
+            { Skill = 'DemonDPS6', Cooldown = 2.55, Range = 12 },
+            { Skill = 'DemonDPS7', Cooldown = 2.9, Range = 12 },
+            { Skill = 'DemonDPS8', Cooldown = 3.3, Range = 12 },
+            { Skill = 'DemonDPS9', Cooldown = 3.6, Range = 12 },
+            { Skill = 'ScytheThrowDPS1', Cooldown = 5.5, Type = 'Ranged', Range = 71 },
+            { Skill = 'ScytheThrowDPS2', Cooldown = 5.5, Type = 'Ranged', Range = 71 },
+            { Skill = 'ScytheThrowDPS3', Cooldown = 5.5, Type = 'Ranged', Range = 71 },
+            { Skill = 'ScytheThrow1', Cooldown = 5.5, Type = 'Ranged', Range = 88 },
+            { Skill = 'ScytheThrow2', Cooldown = 5.5, Type = 'Ranged', Range = 88 },
+            { Skill = 'ScytheThrow3', Cooldown = 5.5, Type = 'Ranged', Range = 88 },
+            { Skill = 'ScytheThrow4', Cooldown = 5.5, Type = 'Ranged', Range = 88 },
+            { Skill = 'ScytheThrow5', Cooldown = 5.5, Type = 'Ranged', Range = 88 },
+            { Skill = 'ScytheThrow6', Cooldown = 5.5, Type = 'Ranged', Range = 88 },
+            { Skill = 'ScytheThrow7', Cooldown = 5.5, Type = 'Ranged', Range = 88 },
+            { Skill = 'ScytheThrow8', Cooldown = 5.5, Type = 'Ranged', Range = 88 },
+            { Skill = 'DemonLifeStealDPS', Cooldown = 8.2, Type = 'Ranged', Range = 56 },
             --{ Skill = Skillsets:WaitForChild('Demon'):WaitForChild('BloodBinding'), Cooldown = 7.2, Type = 'Remote' },
-            --{ Skill = Skillsets:WaitForChild('Demon'):WaitForChild('Ultimate'), Cooldown = 1, Type = 'Remote' },
-            --{ Skill = 'DemonSoulDPS1', Cooldown = 31, Type = 'Ranged', Range = 26 },
-            --{ Skill = 'DemonSoulDPS2', Cooldown = 31, Type = 'Ranged', Range = 26 },
-            --{ Skill = 'DemonSoulDPS3', Cooldown = 31, Type = 'Ranged', Range = 26 }
+            { Skill = Skillsets:WaitForChild('Demon'):WaitForChild('Ultimate'), Cooldown = 1, Type = 'Remote' },
+            { Skill = 'DemonSoulDPS1', Cooldown = 31, Type = 'Ranged', Range = 26 },
+            { Skill = 'DemonSoulDPS2', Cooldown = 31, Type = 'Ranged', Range = 26 },
+            { Skill = 'DemonSoulDPS3', Cooldown = 31, Type = 'Ranged', Range = 26 }
         }
     },
 
@@ -1050,14 +1047,14 @@ do
         Compact = true,
     })
 
-    Farming:AddSlider('LifeStealInterval', {
+    --[[Farming:AddSlider('LifeStealInterval', {
         Text = 'Life Steal Repeats',
         Default = 1,
         Min = 1,
-        Max = 20,
+        Max = 10,
         Rounding = 0,
         HideMax = true,
-    })
+    })]]
 
     Farming:AddToggle('Autofarm', {
         Text = 'Autofarm',
@@ -1083,11 +1080,24 @@ do
         end
     end)
 
+    Farming:AddToggle('CollectDrops', {
+        Text = 'Collect Drops',
+        Default = false, -- Default value (true / false)
+    })
     Farming:AddToggle('RestartDungeon', {
         Text = 'Restart Dungeon',
         Default = false, -- Default value (true / false)
     })
 
+    Farming:AddToggle('NextDungeon', {
+        Text = 'Next Dungeon',
+        Default = false, -- Default value (true / false)
+    })
+    Farming:AddToggle('PerkSwitcher', {
+        Text = 'Auto Switch Mob/Bob perk',
+        Default = false, -- Default value (true / false)
+    })
+    Farming:AddDivider()
     Farming:AddSlider('restartTimer', {
         Text = 'Restart Dungeon After',
         Default = 3,
@@ -1106,26 +1116,42 @@ do
         Rounding = 0,
         HideMax = true,
         Suffix = ' seconds',
-        Tooltip = 'Restart dungeon if no damage has done within the specified time period',
+        Tooltip = 'Restart dungeon if no damage has been done within the specified time period',
+        Compact = true,
     })
 
-
-
-    Farming:AddToggle('NextDungeon', {
-        Text = 'Next Dungeon',
+    Farming:AddToggle('restartAfterFloors', {
+        Text = 'Inf Tower Smart Restart',
+        Tooltip = 'Restarts Infinite Floor after specified amount of floors are completed',
         Default = false, -- Default value (true / false)
     })
-
-    Farming:AddToggle('CollectDrops', {
-        Text = 'Collect Drops',
-        Default = false, -- Default value (true / false)
+    Farming:AddSlider('completedInfiniteTowerFloors', {
+        Text = 'Floors',
+        Default = 31,
+        Min = 1,
+        Max = 150,
+        Rounding = 0,
+        HideMax = true,
+        Compact = true,
     })
+
 
     Farming:AddInput('dungeonHook', {
         Numeric = false, -- true / false, only allows numbers
         Finished = true, -- true / false, only calls callback when you press enter
         Text = 'Webhook Link',
         Tooltip = 'Put your own webhook link to log dungeon completions/fails',
+    })
+	Farming:AddInput('shadowChainDmg', {
+        Numeric = true, -- true / false, only allows numbers
+        Finished = true, -- true / false, only calls callback when you press enter
+        Default = 33000,
+        Text = 'Shadow Chains Tick',
+        Tooltip = 'Put your Shadow Chains tick damage to dummies here or to specific enemies like raid bosses',
+    })
+	Farming:AddToggle('stayInSpawnOnVane', {
+        Text = 'Stay In Spawn On Vane',
+        Default = false, -- Default value (true / false)
     })
     Farming:AddDivider()
 
@@ -1138,10 +1164,7 @@ do
         Compact = true,
     })
 
-    Farming:AddToggle('PerkSwitcher', {
-        Text = 'Auto Switch Mob/Bob perk',
-        Default = false, -- Default value (true / false)
-    })
+  
 
     local RepeatDungeon = Farming:AddButton({
         Text = 'Restart Dungeon',
@@ -1151,19 +1174,6 @@ do
             end
         end,
         DoubleClick = false
-    })
-
-    Farming:AddDivider()
-    Farming:AddToggle('stayInSpawnOnVane', {
-        Text = 'Stay In Spawn On Vane',
-        Default = false, -- Default value (true / false)
-    })
-    Farming:AddInput('shadowChainDmg', {
-        Numeric = true, -- true / false, only allows numbers
-        Finished = true, -- true / false, only calls callback when you press enter
-        Default = 33000,
-        Text = 'Shadow Chains Tick',
-        Tooltip = 'Put your Shadow Chains tick damage to dummies here or to specific enemies like raid bosses',
     })
 end
 
@@ -1319,6 +1329,7 @@ do
     local goldGainedText = StatsTab:AddLabel('Gold Gained: ' .. Gold.Value-OldGold)
     local goldRateText = StatsTab:AddLabel('Gold Rate: N/A')
     local firstTime = true
+    local sessionTick = tick()
     local goldRateTick
     local goldRateGold
     local startGoldTimer = false
@@ -1350,11 +1361,9 @@ do
         end
     end)
     task.spawn(function()
-        repeat wait() until startGoldTimer
-        local goldTimeTick = tick()
         while true do
             task.wait(1)
-            goldTimeElapsedText:SetText('Time Elapsed: ' .. timeElapsed(tick()-goldTimeTick))
+            goldTimeElapsedText:SetText('Session Time: ' .. timeElapsed(tick()-sessionTick))
         end
     end)
 end
@@ -1424,10 +1433,10 @@ do
         task.spawn(function()
             while Toggles.Autofarm.Value do
                 for i,v in pairs(Mobs:GetChildren()) do
-                    if v:FindFirstChild("HealthProperties") and v.HealthProperties:FindFirstChild("Health").Value > 0 then
+                    if v.PrimaryPart and v:FindFirstChild("HealthProperties") and v.HealthProperties:FindFirstChild("Health").Value > 0 then
                         ExtraOffset = ClassData[Class].Range < 30 and -(v.PrimaryPart.Size.y / 2 + 3) or v.PrimaryPart.Size.y / 2 +3
                         while v:FindFirstChild("HealthProperties") and v.HealthProperties.Health.Value > 0 and Toggles.Autofarm.Value 
-                        and HealthProperties:FindFirstChild('Health') and HealthProperties.Health.Value > 0 do
+                        and HealthProperties:FindFirstChild('Health') and HealthProperties.Health.Value > 0 and TeleportingToMob do
                             SmartPlayerTp(v.PrimaryPart, 0, newOffset + ExtraOffset, 1) 
                             Heartbeat:Wait()
                         end
@@ -1445,14 +1454,14 @@ do
                     if v:FindFirstChild("HealthProperties") and v.HealthProperties.Health.Value > 0 and not (v.Name == v1) then
                         ExtraOffset = ClassData[Class].Range < 30 and -(v.PrimaryPart.Size.y / 2 + 3) or v.PrimaryPart.Size.y / 2 + 3
                         while v:FindFirstChild("HealthProperties") and v.HealthProperties.Health.Value > 0 
-                        and HealthProperties.Health.Value > 0 and Toggles.Autofarm.Value do
+                        and HealthProperties.Health.Value > 0 and Toggles.Autofarm.Value and TeleportingToMob do
                             SmartPlayerTp(v.PrimaryPart, 0, newOffset + ExtraOffset, 1) 
                             Heartbeat:Wait()
                         end
                     elseif v.Name == v1 and MobCount == 1 then
                         ExtraOffset = ClassData[Class].Range < 30 and -(v.PrimaryPart.Size.y / 2 + 3) or v.PrimaryPart.Size.y / 2 + 3
                         while v:FindFirstChild("HealthProperties") and v.HealthProperties.Health.Value > 0 
-                        and HealthProperties.Health.Value > 0 and Toggles.Autofarm.Value do
+                        and HealthProperties.Health.Value > 0 and Toggles.Autofarm.Value and TeleportingToMob do
                             if MobCount > 1 then
                                 break
                             end
@@ -1469,25 +1478,25 @@ do
     function AutoCheckpoint()
         task.spawn(function()
             while Toggles.Autofarm.Value do
-                for i,v in pairs(workspace:GetDescendants()) do
-                    if v.Name == "TouchInterest" and v.Parent and (table.find(checkpointTbl, v.Parent.Name) or table.find(checkpointTbl, v.Parent.Parent.Name)) then
-                        task.spawn(function()
-                            v.Parent.CanCollide = false
-                            v.Parent.Anchored = true
-                            v.Parent.CFrame = CFrame.new(HumanoidRootPart.Position)
-                            task.wait(0.25)
-                            if v and v.Parent then
-                                v.Parent.CFrame = CFrame.new(Vector3.new(0,0,0))
-                            end
-                        end)
+                if not PauseAutoCheckpoint then
+                    for i,v in pairs(workspace:GetDescendants()) do
+                        if v.Name == "TouchInterest" and v.Parent and (table.find(checkpointTbl, v.Parent.Name) or table.find(checkpointTbl, v.Parent.Parent.Name)) then
+                            task.spawn(function()
+                                v.Parent.CanCollide = false
+                                v.Parent.Anchored = true
+                                v.Parent.CFrame = CFrame.new(HumanoidRootPart.Position)
+                                task.wait(0.25)
+                                if v and v.Parent then
+                                    v.Parent.CFrame = CFrame.new(Vector3.new(0,0,0))
+                                end
+                            end)
+                        end
                     end
                 end
                 task.wait(0.5)
             end
         end)
     end
-
-
 
     function MobCounter()
         task.spawn(function()
@@ -1516,7 +1525,7 @@ do
                     PausePos = BestMob.Position + Vector3.new(0,10,0)
                 end
                 if PausePos and MobCount and MobCount == 0 and HealthProperties and HealthProperties:FindFirstChild('Health') and HealthProperties.Health.Value > 0 and
-                HumanoidRootPart and (HumanoidRootPart.Position-PausePos).magnitude > 50  then
+                HumanoidRootPart and (HumanoidRootPart.Position-PausePos).magnitude > 300  then
                     PlayerTp(PausePos)
                 end
                 Heartbeat:Wait()
@@ -1621,7 +1630,7 @@ do
 
     -- Cosmetic Buttons
     do
-        local CogWorkButton = OutfitList:AddButton({
+        OutfitList:AddButton({
             Text = 'Cogwork',
             Func = function()
                 if Character then
@@ -1695,7 +1704,7 @@ do
         local y2 = "D U N G E O N    F A I L U R E"
         local z = "T O W E R"
         local name = game.Players.LocalPlayer.Name
-        local raids = {21,22,17,23,27,29,34,43, 38, 39}
+        local raids = {21,22,17,23,27,29,34,43,38,39}
         local diffs = {Normal = 1, Challenge = 5}
         local dungname = "str1" .. " str2"
         local bool = false
@@ -1769,7 +1778,7 @@ do
         function msg(status, color, time)  
             local newLink = Options.dungeonHook.Value
             if newLink and #newLink > 30 then
-                local completionStr =  'Mission: ``' .. dungname .. '``\nTime: **' .. math.round(time/0.1) / 10 .. 's**\nClass: ' .. '``' .. ClassData[Class].DisplayName .. '``\nUser: ' .. plrLink
+                local completionStr =  'Mission: ``' .. dungname .. '``\nTime: **' .. math.round(time/0.1) / 10 .. 's**\nClass: ' .. '``' .. ClassData[Class].DisplayName .. '``\n' .. plrLink
                 if DungeonID == 44 then
                     local vaneraids = game:GetService("ReplicatedStorage").Shared.LeaderboardHookup.GetScore:InvokeServer("VANE_KILLS",1)
                     completionStr = completionStr .. '\nVane Raids Completed Total: **' .. vaneraids[1] .. '**\nVane Raids Completed Daily: ' .. '**' .. vaneraids[2] .. '**'
@@ -1799,13 +1808,16 @@ do
                 })
             end
         end
-        TowerEnd:GetPropertyChangedSignal("Text"):Once(function()
-            dungeonEndTime = tick()
-            msg("Completed", colorTbl.Green, dungeonEndTime-dungeonStartTime)
-        end)
         Shared.Missions.MissionFinished.OnClientEvent:Once(function(completionTime, playerTable, failed, idk)
             dungeonEndTime = tick()
             DungeonCompleted = true
+            task.spawn(function()
+                if not failed then
+                    msg("Completed",colorTbl.Green, completionTime)
+                else
+                    msg("Failed", colorTbl.Red, completionTime)
+                end
+            end)
             Inventory.ChildAdded:Connect(function(c)
                 local drop = items[c.Name]
                 if (drop.Type == 'Weapon' or drop.Type == 'Armor') and table.find(AutoSellTbl, tier:GetItemTier(c)) then
@@ -1819,10 +1831,8 @@ do
                 GetMissionChest:InvokeServer()
             end
             if not failed then
-                msg("Completed",colorTbl.Green, completionTime)
                 task.wait(Options.restartTimer.Value)
             else
-                msg("Failed", colorTbl.Red, completionTime)
                 task.wait(2)
             end
             if Toggles.RestartDungeon.Value and Toggles.Autofarm.Value then
@@ -1857,46 +1867,22 @@ do
                 end
             end
         end)
-    end
-
-        
-    if InTower or InInfiniteTower then
-
-        -- Get Chests
-        Workspace.ChildAdded:Connect(function(c)
-            if Toggles.Autofarm.Value then
-                if c.Name == ChestName then
-                    task.spawn(function()
-                        c.PrimaryPart.CanCollide = false
-                        while c and c.PrimaryPart do
-                            c.PrimaryPart.CFrame = CFrame.new(HumanoidRootPart.Position)
-                            task.wait()
-                        end
-                    end)
-                end
-                if ownsDoubleDrop and c.Name == ChestName2 then
-                    task.spawn(function()
-                        c.PrimaryPart.CanCollide = false
-                        while c and c.PrimaryPart do
-                            c.PrimaryPart.CFrame = CFrame.new(HumanoidRootPart.Position)
-                            task.wait()
-                        end
-                    end)
-                end
-            end
-        end)
-
 
         -- Restart dungeon if beaten (for towers and celestial, not infinite)
         TowerEnd:GetPropertyChangedSignal("Text"):Once(function()
-            local TowerDing = false
-            task.wait(12)
+            dungeonEndTime = tick()
+            DungeonCompleted = true
+            print('done')
+            task.spawn(function()
+                msg("Completed", colorTbl.Green, dungeonEndTime-dungeonStartTime)
+            end)
+            if Toggles.Autofarm.Value then
+                GetMissionChest:InvokeServer()
+                GetMissionChest:InvokeServer()
+            end
+            task.wait(10)
             if Toggles.RestartDungeon.Value and Toggles.Autofarm.Value then
-                if table.find(Towers2, DungeonID) then
-                    StartRaid(DungeonID)
-                else
-                    StartRaid(DungeonID, DifficultyID)
-                end
+                StartRaid(DungeonID, DifficultyID)
             elseif Toggles.NextDungeon.Value and Toggles.Autofarm.Value then
                 if not Toggles.RestartDungeon.Value then
                     local skip = true
@@ -1927,6 +1913,35 @@ do
                 end
             end
         end)   
+    end
+        
+    if InTower or InInfiniteTower then
+
+        -- Get Chests
+        Workspace.ChildAdded:Connect(function(c)
+            if Toggles.Autofarm.Value then
+                if c.Name == ChestName then
+                    task.spawn(function()
+                        c.PrimaryPart.CanCollide = false
+                        while c and c.PrimaryPart do
+                            c.PrimaryPart.CFrame = CFrame.new(HumanoidRootPart.Position)
+                            task.wait()
+                        end
+                    end)
+                end
+                if (ownsDoubleDrop or DungeonCompleted) and c.Name == ChestName2 then
+                    task.spawn(function()
+                        c.PrimaryPart.CanCollide = false
+                        while c and c.PrimaryPart do
+                            c.PrimaryPart.CFrame = CFrame.new(HumanoidRootPart.Position)
+                            task.wait()
+                        end
+                    end)
+                end
+            end
+        end)
+
+        
         
         -- Autosell
         Inventory.ChildAdded:Connect(function(c)
@@ -2013,9 +2028,8 @@ Toggles.Autofarm:OnChanged(function()
     end
 
 
-
     -- Autofarm
-    if InDungeon and Toggles.Autofarm.Value then
+    if InMission and Toggles.Autofarm.Value then
         do  
             --task.spawn(function()
             --    while Toggles.Autofarm.Value do
@@ -2052,36 +2066,46 @@ Toggles.Autofarm:OnChanged(function()
             PlayerTp(OldPosition, 0, 20, 0)
         end
     end
-    
-    -- Tower
+      
+        
     if InTower and Toggles.Autofarm.Value then
-        if not TowerIdleSpot then
-            TowerIdleSpot = MissionObjects.WaveStarter.Position
-        end
-        task.spawn(function() 
-            while Toggles.Autofarm.Value do
-                if MissionObjects:FindFirstChild('WaveStarter') then
-                    MissionObjects.WaveStarter.CFrame = CFrame.new(HumanoidRootPart.Position)
-                end
-                if MissionObjects:FindFirstChild('BossDoorTrigger') then
-                    MissionObjects.BossDoorTrigger.CFrame = CFrame.new(HumanoidRootPart.Position)
-                end
-                if MissionObjects:FindFirstChild('MinibossExit') then
-                    MissionObjects.MinibossExit.CFrame = CFrame.new(HumanoidRootPart.Position)
-                    task.wait()
-                    if MissionObjects:FindFirstChild('MinibossExit') then
-                        MissionObjects.MinibossExit.CFrame = CFrame.new(Vector3.new(0,0,0))
+        if DungeonID == 21 then
+            task.spawn(function()
+                while Toggles.Autofarm.Value do
+                    local shield = workspace:FindFirstChild('IgnisShield')
+                    if shield then
+                        TeleportingToMob = false
+                        Character:SetPrimaryPartCFrame(shield.Ring.CFrame * CFrame.new(0,5,0))
+                    else
+                        TeleportingToMob = true
                     end
-                end
-                task.wait(0.2)
-                if (HumanoidRootPart.Position-TowerIdleSpot).magnitude > 200 and not AtlantisBossCheck then
-                    PlayerTp(TowerIdleSpot)
-                end
+                    task.wait(0.5)
+                end    
+            end)
+        end
+        task.spawn(function()
+            if DungeonID ~= 43 then
+                local starter = CFrame.new(workspace.MissionObjects.WaveStarter.Position + Vector3.new(0,40,0))
+                task.wait(1)
+                Character:SetPrimaryPartCFrame(starter)
             end
         end)
+        --[[local floorDoneStr = '50 / 50'
+        local mobsKilled = game:GetService("Players").LocalPlayer.PlayerGui.TowerVisual.TowerVisual.TowerChests.Crown.Message
+        task.spawn(function()
+            while Toggles.Autofarm.Value do
+                if mobsKilled.Text == floorDoneStr then
+                    Library:Notify('Paused')
+                    PauseAutoCheckpoint = true
+                    TeleportingToMob = false
+                    task.wait(20)
+                end
+                task.wait()
+            end
+        end)]]
     end
-    
-        
+
+
     -- Atlantis Tower
     if InTower and Toggles.Autofarm.Value and InAtlantis then
         local PipePause
@@ -2175,9 +2199,9 @@ Toggles.Autofarm:OnChanged(function()
 
     if InInfiniteTower and Toggles.Autofarm.Value then
         local tempt = {'Demon', 'MageOfShadows'}
-        if not table.find(tempt, Class) then
+        --if not table.find(tempt, Class) then
             MobTeleport()
-        end
+        --end
         local FloorPart = game:GetService("Workspace").LobbyTeleport.Interaction
         local BossPart = game:GetService("Workspace").Boss_Gate.Interactions.Bounds
         task.spawn(function() 
@@ -2185,7 +2209,18 @@ Toggles.Autofarm:OnChanged(function()
                 BossPart.CanCollide = false
                 BossPart.CFrame = CFrame.new(HumanoidRootPart.Position)
                 FloorPart.CFrame = CFrame.new(HumanoidRootPart.Position)
-                task.wait(0.5)
+                task.wait(0.25)
+            end
+        end)
+        task.spawn(function() 
+            while Toggles.Autofarm.Value do
+                if ReplicatedStorage.ReplicateTowerFloor.Value - ReplicatedStorage.ReplicateTowerStartFloor.Value >= Options.completedInfiniteTowerFloors.Value and Toggles.restartAfterFloors.Value then
+                    Library:Notify(ReplicatedStorage.ReplicateTowerFloor.Value - ReplicatedStorage.ReplicateTowerStartFloor.Value .. ' floors completed, restarting Infinite Tower!')
+                    task.wait(1)
+                    StartRaid(DungeonID)
+                    break
+                end
+                task.wait()
             end
         end)
     end
@@ -2237,14 +2272,146 @@ Toggles.Killaura:OnChanged(function()
     local ExtraRange = 0
     local lastAttackTime = tick()
 
+    -- Dungeon restart timeout if no damage done in specified time minutes
+    if InMission then
+        task.spawn(function()
+            while Toggles.Killaura.Value and not DungeonCompleted do
+                local timeoutTime = tick()-lastAttackTime
+                if timeoutTime >= Options.timeoutTimer.Value and Toggles.Autofarm.Value then
+                    Library:Notify('Timeout! Force restarting dungeon!')
+                    StartRaid(DungeonID, DifficultyID)
+                    break
+                end
+                task.wait(1)
+            end
+        end)
+    end
+
+		-- LifeSteal Loop for demon
+		if InMission then
+			if Class == 'Demon' then
+				if not InAtlantis then
+					local IgnoringMobs = false
+					for i2,v2 in pairs(mobIgnoreTbl) do
+						if DungeonID == v2.Id then
+							IgnoringMobs = true
+							task.spawn(function()
+								local mobWait
+								while Toggles.Killaura.Value do
+									for _, Mob in pairs(Mobs:GetChildren()) do
+										if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+											if not (Mob.Name == v2.ignoreMob) then
+												lastAttackTime = tick()
+												for i = 1, Options.LifeStealInterval.Value do
+													LifeSteal:FireServer(table.create(3, Mob))
+												end
+											end
+											if Mob.Name == v2.ignoreMob and MobCount and MobCount == 1 then
+												if not mobWait then
+													task.wait(3)
+													mobWait = true
+												end
+												if MobCount == 1 then
+													lastAttackTime = tick()
+													for i = 1, Options.LifeStealInterval.Value do
+														LifeSteal:FireServer(table.create(3, Mob))
+													end
+												end
+											end
+										end
+									end
+									task.wait(Options.KillauraDelay.Value)
+								end
+							end)
+						end
+					end
+					if not IgnoringMobs then
+						task.spawn(function()
+							while Toggles.Killaura.Value do
+								for _, Mob in pairs(Mobs:GetChildren()) do
+									if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+										lastAttackTime = tick()
+										for i = 1, Options.LifeStealInterval.Value do
+											LifeSteal:FireServer(table.create(3, Mob))
+										end
+									end
+								end
+								task.wait(Options.KillauraDelay.Value)
+							end
+						end)
+					end
+				end
+				if InAtlantis then
+					task.spawn(function()
+						while not Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
+								for _, Mob in pairs(Mobs:GetChildren()) do
+									if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+										lastAttackTime = tick()
+										for i = 1, Options.LifeStealInterval.Value do
+											LifeSteal:FireServer(table.create(3, Mob))
+										end
+									end
+								end
+							task.wait(Options.KillauraDelay.Value)
+						end
+						while Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
+							for _, Mob in pairs(Mobs:GetChildren()) do
+								if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+									lastAttackTime = tick()
+									for i = 1, Options.LifeStealInterval.Value do
+										LifeSteal:FireServer(table.create(3, Mob))
+									end
+								end
+							end
+							task.wait(Options.KillauraDelay.Value)
+						end
+					end)
+				end
+			end
+		end
+
+	-- MageOfShadow
+    if Class == 'MageOfShadows' and Toggles.Killaura.Value and InMission then
+        
+        task.spawn(function()
+            while Toggles.Killaura.Value do
+                local attackTbl = {}
+                local movingTbl = {}
+                for _, Mob in pairs(Workspace.Mobs:GetChildren()) do
+                    local MeshPart = Mob.PrimaryPart
+                    if MeshPart and Mob:FindFirstChild('HealthProperties') and Mob.HealthProperties:FindFirstChild('Health') and Mob.HealthProperties.Health.Value > 0 then
+                        local intervals = math.ceil(Mob.HealthProperties.Health.Value / (Options.shadowChainDmg.Value or 30000))
+                        for i = 1,intervals do
+                            table.insert(attackTbl, Mob)
+                        end
+                        table.insert(movingTbl, Mob)
+                    end
+                end
+                if #attackTbl > 0 then
+                    print('Launching Attack ' .. #attackTbl .. ' times')
+                    game:GetService("ReplicatedStorage").Shared.Combat.Skillsets.MageOfShadows.ShadowChains:FireServer(attackTbl)
+					lastAttackTime = tick()
+                    for i,v in pairs(movingTbl) do
+                        if v then v.Parent = mageOfShadowBodies end
+                    end
+                    task.wait(3)
+                end
+                task.wait()
+            end
+        end)
+    end
+
+	if true then
+		return
+	end
 
     -- ExtraRange and PerkSwitcher
     task.spawn(function()
-        if (Class == 'Demon' or Class == 'MageOfShadows') and InMission then
+        --[[if Class == 'Demon' and InMission then
             return
-        end
+        end]]
         while Toggles.Killaura.Value do
-            if BestMob and MobList:FindFirstChild(BestMob.Parent.Name) then
+            if BestMob and BestMob.Parent and MobList:FindFirstChild(BestMob.Parent.Name) then
                 local CurrentMob = Mob(BestMob.Parent.Name)
                 local MobName = CurrentMob.NameTag
                 local BossTag = CurrentMob.BossTag
@@ -2293,9 +2460,6 @@ Toggles.Killaura:OnChanged(function()
 
     -- Killaura
     task.spawn(function()
-        if (Class == 'Demon' or Class == 'MageOfShadows') and InMission then
-            return
-        end
         while Toggles.Killaura.Value do
             BestMob = getClosestMob()
             if BestMob and Character:FindFirstChild('Properties') and not (Character.Properties:GetAttribute('Mounted')) 
@@ -2313,7 +2477,7 @@ Toggles.Killaura:OnChanged(function()
                             elseif SkillData.Args == 'MobPosition' then
                                 Attack:FireServer(SkillData.Skill, BestMob.Position)
                                 SkillData.LastUsed = tick()
-                            else -- Main Melee attack
+                            else
                                 Attack:FireServer(SkillData.Skill, HumanoidRootPart.Position, CFrame.new(HumanoidRootPart.Position, BestMob.Position).LookVector)
                                 SkillData.LastUsed = tick()
                             end
@@ -2353,7 +2517,7 @@ Toggles.Killaura:OnChanged(function()
     -- MissionObjects moving to mobs folder
     if InMission and not MissionScripts:FindFirstChild(36) then
         task.spawn(function()
-            while Toggles.Killaura.Value do
+            while true do
                 for i,v in pairs(MissionObjects:GetChildren()) do
                     if v:FindFirstChild("HealthProperties") and not table.find(ignoreObjects, v.Name) then
                         v.Parent = Mobs
@@ -2370,91 +2534,8 @@ Toggles.Killaura:OnChanged(function()
         end)    
     end
 
-    -- LifeSteal Loop for demon
-    if InMission then
-        if Class == 'Demon' then
-            if not InAtlantis then
-                local IgnoringMobs = false
-                for i2,v2 in pairs(mobIgnoreTbl) do
-                    if DungeonID == v2.Id then
-                        IgnoringMobs = true
-                        task.spawn(function()
-                            local mobWait
-                            while Toggles.Killaura.Value do
-                                for _, Mob in pairs(Mobs:GetChildren()) do
-                                    if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
-                                        if not (Mob.Name == v2.ignoreMob) then
-                                            lastAttackTime = tick()
-                                            for i = 1, Options.LifeStealInterval.Value do
-                                                LifeSteal:FireServer(table.create(3, Mob))
-                                            end
-                                        end
-                                        if Mob.Name == v2.ignoreMob and MobCount and MobCount == 1 then
-                                            if not mobWait then
-                                                task.wait(3)
-                                                mobWait = true
-                                            end
-                                            if MobCount == 1 then
-                                                lastAttackTime = tick()
-                                                for i = 1, Options.LifeStealInterval.Value do
-                                                    LifeSteal:FireServer(table.create(3, Mob))
-                                                end
-                                            end
-                                        end
-                                    end
-                                end
-                                task.wait(Options.KillauraDelay.Value)
-                            end
-                        end)
-                    end
-                end
-                if not IgnoringMobs then
-                    task.spawn(function()
-                        while Toggles.Killaura.Value do
-                            for _, Mob in pairs(Mobs:GetChildren()) do
-                                if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
-                                    lastAttackTime = tick()
-                                    for i = 1, Options.LifeStealInterval.Value do
-                                        LifeSteal:FireServer(table.create(3, Mob))
-                                    end
-                                end
-                            end
-                            task.wait(Options.KillauraDelay.Value)
-                        end
-                    end)
-                end
-            end
-            if InAtlantis then
-                task.spawn(function()
-                    while not Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
-                            for _, Mob in pairs(Mobs:GetChildren()) do
-                                if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
-                                    lastAttackTime = tick()
-                                    for i = 1, Options.LifeStealInterval.Value do
-                                        LifeSteal:FireServer(table.create(3, Mob))
-                                    end
-                                end
-                            end
-                        task.wait(Options.KillauraDelay.Value)
-                    end
-                    while Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
-                        for _, Mob in pairs(Mobs:GetChildren()) do
-                            if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
-                                lastAttackTime = tick()
-                                for i = 1, Options.LifeStealInterval.Value do
-                                    LifeSteal:FireServer(table.create(3, Mob))
-                                end
-                            end
-                        end
-                        task.wait(Options.KillauraDelay.Value)
-                    end
-                end)
-            end
-        end
-    end
-
     -- Demon BloodBinding
-    if Class == 'Demon' and Toggles.Killaura.Value and TempCheck then
+    if Class == 'Demon' and Toggles.Killaura.Value then
         task.spawn(function()
             while Toggles.Killaura.Value do
                 if not Character:FindFirstChild('AttackBuffDemonBloodBinding',true) 
@@ -2508,37 +2589,6 @@ Toggles.Killaura:OnChanged(function()
         end)
     end
 
-    -- MageOfShadow
-    if Class == 'MageOfShadows' and Toggles.Killaura.Value and InMission then
-        
-        task.spawn(function()
-            while Toggles.Killaura.Value do
-                local attackTbl = {}
-                local movingTbl = {}
-                for _, Mob in pairs(Workspace.Mobs:GetChildren()) do
-                    local MeshPart = Mob.PrimaryPart
-                    if MeshPart and Mob:FindFirstChild('HealthProperties') and Mob.HealthProperties:FindFirstChild('Health') and Mob.HealthProperties.Health.Value > 0 then
-                        local intervals = math.ceil(Mob.HealthProperties.Health.Value / (Options.shadowChainDmg.Value or 30000))
-                        lastAttackTime = tick()
-                        for i = 1,intervals do
-                            table.insert(attackTbl, Mob)
-                        end
-                        table.insert(movingTbl, Mob)
-                    end
-                end
-                if #attackTbl > 0 then
-                    print('Launching Attack ' .. #attackTbl .. ' times')
-                    game:GetService("ReplicatedStorage").Shared.Combat.Skillsets.MageOfShadows.ShadowChains:FireServer(attackTbl)
-                    for i,v in pairs(movingTbl) do
-                        if v then v.Parent = mageOfShadowBodies end
-                    end
-                    task.wait(3)
-                end
-                task.wait()
-            end
-        end)
-    end
-
     -- Dungeon restart timeout if no damage done in specified time minutes
     if InMission then
         task.spawn(function()
@@ -2569,8 +2619,7 @@ Toggles.CollectDrops:OnChanged(function()
     end)
 end)
 
-local Effects = game.ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Effects")
-local f = require(Effects)
+local f = require(game.ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Effects"))
 local DmgNum = f.RenderDamageNumber
 Toggles.NVD:OnChanged(function()
     f.RenderDamageNumber = function(...)
