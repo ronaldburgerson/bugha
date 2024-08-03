@@ -1005,9 +1005,9 @@ local Tabs = {
     Outfits = Window:AddTab('Outfits'),
 }
 
-local Farming = Tabs.Main:AddLeftGroupbox('Farming')
-local AutoSell1 = Tabs.Main:AddLeftTabbox('Auto Sell')
-local AutoSell = AutoSell1:AddTab('Selling')
+local mainFarming = Tabs.Main:AddLeftTabbox('farmmm')
+local Farming = mainFarming:AddTab('Farming')
+local AutoSell = mainFarming:AddTab('Selling')
 local Miscellaneous = Tabs.Main:AddRightGroupbox('Miscellaneous')
 local Gui = Tabs.Main:AddRightGroupbox('Gui')
 local StatsTabbox = Tabs.Main:AddRightTabbox('temp')
@@ -1678,7 +1678,7 @@ do
         local y2 = "D U N G E O N    F A I L U R E"
         local z = "T O W E R"
         local name = game.Players.LocalPlayer.Name
-        local raids = {21,22,17,23,27,29,34,43}
+        local raids = {21,22,17,23,27,29,34,43, 38, 39}
         local diffs = {Normal = 1, Challenge = 5}
         local dungname = "str1" .. " str2"
         local bool = false
@@ -1786,101 +1786,30 @@ do
             dungeonEndTime = tick()
             msg("Completed", colorTbl.Green, dungeonEndTime-dungeonStartTime)
         end)
-        if InDungeon then
-            Shared.Missions.MissionFinished.OnClientEvent:Once(function(completionTime, playerTable, failed, idk)
-                dungeonEndTime = tick()
-                DungeonCompleted = true
-                Inventory.ChildAdded:Connect(function(c)
-                    local drop = items[c.Name]
-                    if (drop.Type == 'Weapon' or drop.Type == 'Armor') and table.find(AutoSellTbl, tier:GetItemTier(c)) then
-                        c:WaitForChild('Level')
-                        Library:Notify('Sold a Lvl ' .. c.Level.Value .. ' T' .. tier:GetItemTier(c) .. ' ' .. drop.DisplayKey)
-                        sell(c)
-                    end
-                end)
-                if Toggles.Autofarm.Value then
-                    GetMissionChest:InvokeServer()
-                    GetMissionChest:InvokeServer()
-                end
-                if not failed then
-                    msg("Completed",colorTbl.Green, completionTime)
-                    task.wait(Options.restartTimer.Value)
-                else
-                    msg("Failed", colorTbl.Red, completionTime)
-                    task.wait(2)
-                end
-                if Toggles.RestartDungeon.Value and Toggles.Autofarm.Value then
-                    StartRaid(DungeonID, DifficultyID)
-                elseif Toggles.NextDungeon.Value and Toggles.Autofarm.Value then
-                    if not Toggles.RestartDungeon.Value then
-                        local skip = true
-                        local tower = false
-                        if DungeonID == 38 then
-                            skip = false
-                        end
-                        if skip then
-                            if table.find(Towers2, nextDungeonTbl[table.find(nextDungeonTbl, DungeonID)+1]) then
-                                if DifficultyID == 5 then
-                                    tower = true
-                                end
-                                if InTower or InInfiniteTower then
-                                    tower = true
-                                end
-                            end
-                            if not tower then
-                                if InDungeon and DifficultyID == 1 then
-                                    StartRaid(DungeonID, 5)
-                                else
-                                    StartRaid(nextDungeonTbl[table.find(nextDungeonTbl, DungeonID)+1],1)
-                                end
-                            end
-                            if tower then
-                                StartRaid(nextDungeonTbl[table.find(nextDungeonTbl, DungeonID)+1])
-                            end
-                        end
-                    end
+        Shared.Missions.MissionFinished.OnClientEvent:Once(function(completionTime, playerTable, failed, idk)
+            dungeonEndTime = tick()
+            DungeonCompleted = true
+            Inventory.ChildAdded:Connect(function(c)
+                local drop = items[c.Name]
+                if (drop.Type == 'Weapon' or drop.Type == 'Armor') and table.find(AutoSellTbl, tier:GetItemTier(c)) then
+                    c:WaitForChild('Level')
+                    Library:Notify('Sold a Lvl ' .. c.Level.Value .. ' T' .. tier:GetItemTier(c) .. ' ' .. drop.DisplayKey)
+                    sell(c)
                 end
             end)
-        end
-    end
-
-        
-    if InTower or InInfiniteTower then
-
-        -- Get Chests
-        Workspace.ChildAdded:Connect(function(c)
             if Toggles.Autofarm.Value then
-                if c.Name == ChestName then
-                    task.spawn(function()
-                        c.PrimaryPart.CanCollide = false
-                        while c and c.PrimaryPart do
-                            c.PrimaryPart.CFrame = CFrame.new(HumanoidRootPart.Position)
-                            task.wait()
-                        end
-                    end)
-                end
-                if ownsDoubleDrop and c.Name == ChestName2 then
-                    task.spawn(function()
-                        c.PrimaryPart.CanCollide = false
-                        while c and c.PrimaryPart do
-                            c.PrimaryPart.CFrame = CFrame.new(HumanoidRootPart.Position)
-                            task.wait()
-                        end
-                    end)
-                end
+                GetMissionChest:InvokeServer()
+                GetMissionChest:InvokeServer()
             end
-        end)
-
-        -- Restart Dungeon if fail
-        Shared.Missions.MissionFinished.OnClientEvent:Once(function()
-            dungeonEndTime = tick()
-            task.wait(1)
+            if not failed then
+                msg("Completed",colorTbl.Green, completionTime)
+                task.wait(Options.restartTimer.Value)
+            else
+                msg("Failed", colorTbl.Red, completionTime)
+                task.wait(2)
+            end
             if Toggles.RestartDungeon.Value and Toggles.Autofarm.Value then
-                if table.find(Towers2, DungeonID) then
-                    StartRaid(DungeonID)
-                else
-                    StartRaid(DungeonID, DifficultyID)
-                end
+                StartRaid(DungeonID, DifficultyID)
             elseif Toggles.NextDungeon.Value and Toggles.Autofarm.Value then
                 if not Toggles.RestartDungeon.Value then
                     local skip = true
@@ -1911,6 +1840,35 @@ do
                 end
             end
         end)
+    end
+
+        
+    if InTower or InInfiniteTower then
+
+        -- Get Chests
+        Workspace.ChildAdded:Connect(function(c)
+            if Toggles.Autofarm.Value then
+                if c.Name == ChestName then
+                    task.spawn(function()
+                        c.PrimaryPart.CanCollide = false
+                        while c and c.PrimaryPart do
+                            c.PrimaryPart.CFrame = CFrame.new(HumanoidRootPart.Position)
+                            task.wait()
+                        end
+                    end)
+                end
+                if ownsDoubleDrop and c.Name == ChestName2 then
+                    task.spawn(function()
+                        c.PrimaryPart.CanCollide = false
+                        while c and c.PrimaryPart do
+                            c.PrimaryPart.CFrame = CFrame.new(HumanoidRootPart.Position)
+                            task.wait()
+                        end
+                    end)
+                end
+            end
+        end)
+
 
         -- Restart dungeon if beaten (for towers and celestial, not infinite)
         TowerEnd:GetPropertyChangedSignal("Text"):Once(function()
