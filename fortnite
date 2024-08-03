@@ -1,12 +1,40 @@
 if game.gameId ~= 985731078 then
     return
 end
-print('Infinite | World Zero v2')
+print('Infinite | World Zero v3')
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
 
-
+task.spawn(function()
+    local function getRobloxAvatarUrl(userId)
+        local apiUrl = "https://thumbnails.roblox.com/v1/users/avatar"
+        local size = "352x352"
+        local format = "Png"
+        local url = string.format("%s?userIds=%d&size=%s&format=%s", apiUrl, userId, size, format)
+    
+        -- Use game:HttpGet to make the HTTP GET request
+        local success, result = pcall(function()
+            return game:HttpGet(url)
+        end)
+    
+        if success then
+            -- Parse the JSON response
+            local data = game:GetService("HttpService"):JSONDecode(result)
+            if data and data.data and #data.data > 0 then
+                local imageUrl = data.data[1].imageUrl
+                return imageUrl
+            else
+                warn("Failed to retrieve avatar URL.")
+                return nil
+            end
+        else
+            warn("HTTP request failed: " .. result)
+            return nil
+        end
+    end
+    getgenv().avatarLink = getRobloxAvatarUrl(game.Players.LocalPlayer.UserId)
+end)
 
 local DamageDebug = false -- DamageDebug
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -1719,16 +1747,17 @@ do
             Cyan = 0x00c8ff,
             Yellow = 0xffff00,
         }
-        function msg(v1,v2,v3)  
+        local plr = game.Players.LocalPlayer
+        local plrLink = 'User: [' .. plr.DisplayName .. ' (@' .. plr.Name .. ')](https://www.roblox.com/users/' .. plr.UserId .. '/profile)'
+        function msg(status, color, time)  
             local newLink = Options.dungeonHook.Value
             if newLink and #newLink > 30 then
-                local vaneraids = game:GetService("ReplicatedStorage").Shared.LeaderboardHookup.GetScore:InvokeServer("VANE_KILLS",1)
-                local newStr
+                local completionStr =  'Mission: ``' .. dungname .. '``\nTime: **' .. math.round(time/0.1) / 10 .. 's**\n' .. plrLink
                 if DungeonID == 44 then
-                    newStr = name .. " " .. v1 .. " " .. dungname .. " in " .. "**" .. math.round((v3)/0.1) / 10 .. "s** with " .. Class
-                    .. '\nVane Raids Completed Total: **' .. vaneraids[1] .. '**\nVane Raids Completed Daily: ' .. '**' .. vaneraids[2] .. '**'
-                else
-                    newStr = name .. " " .. v1 .. " " .. dungname .. " in " .. "**" .. math.round((v3)/0.1) / 10 .. "s** with " .. Class
+                    local vaneraids = game:GetService("ReplicatedStorage").Shared.LeaderboardHookup.GetScore:InvokeServer("VANE_KILLS",1)
+                    completionStr = completionStr .. '\nVane Raids Completed Total: **' .. vaneraids[1] .. '**\nVane Raids Completed Daily: ' .. '**' .. vaneraids[2] .. '**'
+                elseif DungeonID == 38 then
+                    completionStr = completionStr ..  '\nFloor: **' .. ReplicatedStorage.ReplicateTowerFloor.Value .. '**'
                 end
                 request({
                     Url = newLink,
@@ -1738,12 +1767,15 @@ do
                     },
                     Body = HttpService:JSONEncode({
                         ["embeds"] = {{
-                            --["title"] = v3,
-                            ["description"] = newStr,
+                            ["title"] = status,
+                            ["description"] = completionStr,
                             ["type"] = 'rich',
-                            ["color"] = tonumber(v2),
+                            ["color"] = tonumber(color),
                             ["footer"] = {
                                 ["text"] = GetTime() .. ' UTC',
+                            },
+                            ["thumbnail"] = {
+                                ["url"] = avatarLink,
                             },
                         }}
                     })
@@ -1752,7 +1784,7 @@ do
         end
         TowerEnd:GetPropertyChangedSignal("Text"):Once(function()
             dungeonEndTime = tick()
-            msg("completed", colorTbl.Green, dungeonEndTime-dungeonStartTime)
+            msg("Completed", colorTbl.Green, dungeonEndTime-dungeonStartTime)
         end)
         if InDungeon then
             Shared.Missions.MissionFinished.OnClientEvent:Once(function(completionTime, playerTable, failed, idk)
@@ -1771,10 +1803,10 @@ do
                     GetMissionChest:InvokeServer()
                 end
                 if not failed then
-                    msg("completed",colorTbl.Green, completionTime)
+                    msg("Completed",colorTbl.Green, completionTime)
                     task.wait(Options.restartTimer.Value)
                 else
-                    msg("failed", colorTbl.Red, completionTime)
+                    msg("Failed", colorTbl.Red, completionTime)
                     task.wait(2)
                 end
                 if Toggles.RestartDungeon.Value and Toggles.Autofarm.Value then
