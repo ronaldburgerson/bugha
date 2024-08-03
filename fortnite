@@ -919,11 +919,11 @@ if Whitelisted then
             Type = 'Ranged',
             Primary = 'Staff',
             Skills = {
-                { Skill = 'MageOfShadows', Cooldown = 0.8 },
-                { Skill = 'MageOfShadowsBlast', Cooldown = 0.8 },
-                { Skill = 'BigShadowOrb1', Cooldown = 0.8 },
-                { Skill = 'BigShadowOrb2', Cooldown = 0.8 },
-                { Skill = 'BigShadowOrb3', Cooldown = 0.8 },
+                --{ Skill = 'MageOfShadows', Cooldown = 0.8 },
+                --{ Skill = 'MageOfShadowsBlast', Cooldown = 0.8 },
+                --{ Skill = 'BigShadowOrb1', Cooldown = 0.8 },
+                --{ Skill = 'BigShadowOrb2', Cooldown = 0.8 },
+                --{ Skill = 'BigShadowOrb3', Cooldown = 0.8 },
             }
         }
     }   
@@ -1169,7 +1169,7 @@ if Whitelisted then
 
         function SmartPlayerTp(v1, x, y, z)
             HumanoidRootPart.CFrame = v1.CFrame + (v1.CFrame.lookVector*(x)+v1.CFrame.upVector*(y)+v1.CFrame.rightVector*(z))
-            HumanoidRootPart.CFrame = CFrame.lookAt(HumanoidRootPart.Position, v1.Position)
+            HumanoidRootPart.CFrame = CFrame.lookAt(HumanoidRootPart.Position, Vector3.new(v1.Position.x, HumanoidRootPart.Position.y, v1.Position.z))
             --HumanoidRootPart.CFrame = CFrame.new(v1.Position + (v1.CFrame.lookVector*(x)+v1.CFrame.upVector*(y)+v1.CFrame.rightVector*(z)),
             --Vector3.new(v1.Position.x, HumanoidRootPart.Position.y, v1.Position.z))
         end
@@ -1597,7 +1597,7 @@ if Whitelisted then
     -- Dungeon fixer and restartdungeon and nextdungeon and autosell
     do
 
-        -- Dungeon Fixer and dungeon hook
+        -- Dungeon Fixer and dungeon hook and dungeon restart
         if InMission then
             if MissionScripts:FindFirstChild(6) then -- Gravetower move pillars to mob folder
                 task.spawn(function()
@@ -1713,16 +1713,15 @@ if Whitelisted then
                 Yellow = 0xffff00,
             }
             function msg(v1,v2,v3)  
-                task.wait()
                 local newLink = Options.dungeonHook.Value
                 if newLink and #newLink > 30 then
                     local vaneraids = game:GetService("ReplicatedStorage").Shared.LeaderboardHookup.GetScore:InvokeServer("VANE_KILLS",1)
                     local newStr
                     if DungeonID == 44 then
-                        newStr = name .. " " .. v1 .. " " .. dungname .. " in " .. "**" .. math.round((dungeonEndTime-dungeonStartTime)/0.1) / 10 .. "s** with " .. Class
+                        newStr = name .. " " .. v1 .. " " .. dungname .. " in " .. "**" .. math.round((v3)/0.1) / 10 .. "s** with " .. Class
                         .. '\nVane Raids Completed Total: **' .. vaneraids[1] .. '**\nVane Raids Completed Daily: ' .. '**' .. vaneraids[2] .. '**'
                     else
-                        newStr = name .. " " .. v1 .. " " .. dungname .. " in " .. "**" .. math.round((dungeonEndTime-dungeonStartTime)/0.1) / 10 .. "s** with " .. Class
+                        newStr = name .. " " .. v1 .. " " .. dungname .. " in " .. "**" .. math.round((v3)/0.1) / 10 .. "s** with " .. Class
                     end
                     request({
                         Url = newLink,
@@ -1732,7 +1731,7 @@ if Whitelisted then
                         },
                         Body = HttpService:JSONEncode({
                             ["embeds"] = {{
-                                ["title"] = v3,
+                                --["title"] = v3,
                                 ["description"] = newStr,
                                 ["type"] = 'rich',
                                 ["color"] = tonumber(v2),
@@ -1744,75 +1743,67 @@ if Whitelisted then
                     })
                 end
             end
-            task.spawn(function()
-                repeat wait() until end1.Text == x or end1.Text == x2
-                msg("completed", colorTbl.Green)
-            end)
-            task.spawn(function()
-                repeat wait() until end1.Text == y or end1.Text == y2
-                msg("failed",colorTbl.Red)
-                StartRaid(DungeonID, DifficultyID)
-            end)
-            task.spawn(function()
-                repeat wait() until end1.Text == z
-                msg("failed",colorTbl.Red)
-                StartRaid(DungeonID, DifficultyID)
-            end)
             TowerEnd:GetPropertyChangedSignal("Text"):Once(function()
-                msg("completed",colorTbl.Green)
-            end)
-        end
-
-        if InDungeon then
-            Shared.Missions.MissionFinished.OnClientEvent:Once(function()
                 dungeonEndTime = tick()
-                DungeonCompleted = true
-                Inventory.ChildAdded:Connect(function(c)
-                    local drop = items[c.Name]
-                    if (drop.Type == 'Weapon' or drop.Type == 'Armor') and table.find(AutoSellTbl, tier:GetItemTier(c)) then
-                        c:WaitForChild('Level')
-                        Library:Notify('Sold a Lvl ' .. c.Level.Value .. ' T' .. tier:GetItemTier(c) .. ' ' .. drop.DisplayKey)
-                        sell(c)
+                msg("completed", colorTbl.Green, dungeonEndTime-dungeonStartTime)
+            end)
+            if InDungeon then
+                Shared.Missions.MissionFinished.OnClientEvent:Once(function(completionTime, playerTable, failed, idk)
+                    dungeonEndTime = tick()
+                    DungeonCompleted = true
+                    Inventory.ChildAdded:Connect(function(c)
+                        local drop = items[c.Name]
+                        if (drop.Type == 'Weapon' or drop.Type == 'Armor') and table.find(AutoSellTbl, tier:GetItemTier(c)) then
+                            c:WaitForChild('Level')
+                            Library:Notify('Sold a Lvl ' .. c.Level.Value .. ' T' .. tier:GetItemTier(c) .. ' ' .. drop.DisplayKey)
+                            sell(c)
+                        end
+                    end)
+                    if Toggles.Autofarm.Value then
+                        GetMissionChest:InvokeServer()
+                        GetMissionChest:InvokeServer()
+                    end
+                    if not failed then
+                        msg("completed",colorTbl.Green, completionTime)
+                    else
+                        msg("failed", colorTbl.Red, completionTime)
+                    end
+                    task.wait(Options.restartTimer.Value)
+                    if Toggles.RestartDungeon.Value and Toggles.Autofarm.Value then
+                        StartRaid(DungeonID, DifficultyID)
+                    elseif Toggles.NextDungeon.Value and Toggles.Autofarm.Value then
+                        if not Toggles.RestartDungeon.Value then
+                            local skip = true
+                            local tower = false
+                            if DungeonID == 38 then
+                                skip = false
+                            end
+                            if skip then
+                                if table.find(Towers2, nextDungeonTbl[table.find(nextDungeonTbl, DungeonID)+1]) then
+                                    if DifficultyID == 5 then
+                                        tower = true
+                                    end
+                                    if InTower or InInfiniteTower then
+                                        tower = true
+                                    end
+                                end
+                                if not tower then
+                                    if InDungeon and DifficultyID == 1 then
+                                        StartRaid(DungeonID, 5)
+                                    else
+                                        StartRaid(nextDungeonTbl[table.find(nextDungeonTbl, DungeonID)+1],1)
+                                    end
+                                end
+                                if tower then
+                                    StartRaid(nextDungeonTbl[table.find(nextDungeonTbl, DungeonID)+1])
+                                end
+                            end
+                        end
                     end
                 end)
-                if Toggles.Autofarm.Value then
-                    GetMissionChest:InvokeServer()
-                    GetMissionChest:InvokeServer()
-                end
-                task.wait(Options.restartTimer.Value)
-                if Toggles.RestartDungeon.Value and Toggles.Autofarm.Value then
-                    StartRaid(DungeonID, DifficultyID)
-                elseif Toggles.NextDungeon.Value and Toggles.Autofarm.Value then
-                    if not Toggles.RestartDungeon.Value then
-                        local skip = true
-                        local tower = false
-                        if DungeonID == 38 then
-                            skip = false
-                        end
-                        if skip then
-                            if table.find(Towers2, nextDungeonTbl[table.find(nextDungeonTbl, DungeonID)+1]) then
-                                if DifficultyID == 5 then
-                                    tower = true
-                                end
-                                if InTower or InInfiniteTower then
-                                    tower = true
-                                end
-                            end
-                            if not tower then
-                                if InDungeon and DifficultyID == 1 then
-                                    StartRaid(DungeonID, 5)
-                                else
-                                    StartRaid(nextDungeonTbl[table.find(nextDungeonTbl, DungeonID)+1],1)
-                                end
-                            end
-                            if tower then
-                                StartRaid(nextDungeonTbl[table.find(nextDungeonTbl, DungeonID)+1])
-                            end
-                        end
-                    end
-                end
-            end)
+            end
         end
+
             
         if InTower or InInfiniteTower then
 
@@ -2562,7 +2553,8 @@ if Whitelisted then
         end)
     end)
 
-    local f = require(game.ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Effects"))
+    local Effects = game.ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Effects")
+    local f = require(Effects)
     local DmgNum = f.RenderDamageNumber
     Toggles.NVD:OnChanged(function()
         f.RenderDamageNumber = function(...)
