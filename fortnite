@@ -1,7 +1,7 @@
 if game.gameId ~= 985731078 then
     return
 end
-print('Infinite | World Zero v6')
+print('Infinite | World Zero v7')
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
@@ -981,12 +981,7 @@ local ClassData = {
     }
 }   
 
-local OffsetNum
-if ClassData[Class].Type == "Melee" then
-    OffsetNum = 30
-else
-    OffsetNum = 95
-end
+
 local Folder = Instance.new('Folder')
 Folder.Name = 'SummonFolder'
 Folder.Parent = Workspace
@@ -1080,7 +1075,7 @@ do
         Text = 'Offset',
         Default = 0,
         Min = 0,
-        Max = OffsetNum,
+        Max = 80,
         Rounding = 1,
         Compact = true,
     })
@@ -1335,6 +1330,66 @@ do
             end
         end
     end
+
+    Gui:AddInput('marketFilter', {
+        --Default = '1000000',
+        Numeric = false, -- true / false, only allows numbers
+        Finished = true, -- true / false, only calls callback when you press enter
+        Text = 'Market Filter',
+    })
+    Gui:AddButton({
+        Text = 'Open All Markets',
+        Func = function()
+            task.spawn(function()
+                setthreadcontext(2)
+                local shop = require(game.ReplicatedStorage.Client.Gui):Get("Shop")
+                local func = getfenv(shop.Open).BuildShop
+                
+                pcall(shop.Open, shop, game)
+                for i,v in pairs(getupvalue(func, 1)) do
+                    v:Destroy()
+                end
+                for i,v in pairs(getupvalue(func, 2)) do
+                    v:Disconnect()
+                end
+
+                local list = {}
+                local conns = {}
+                local profiles = game.ReplicatedStorage:WaitForChild("Profiles")
+                for i,p in pairs(game.Players:GetPlayers()) do
+                    local plrShop = profiles:FindFirstChild(p.Name) and profiles[p.Name]:FindFirstChild("SellShop")
+                    if plrShop and plrShop:FindFirstChild("Active") and plrShop.Active.Value then
+                        setupvalue(func, 1, {})
+                        setupvalue(func, 2, {})
+                        func(p)
+                        for i,v in pairs(getupvalue(func, 1)) do
+                            v.Title.Text = v.Title.Text .. " (" .. p.Name .. ")"
+                            v.Title.Overlay.Text = v.Title.Text
+                            table.insert(list, v)
+                        end
+                        for i,v in pairs(getupvalue(func, 2)) do
+                            table.insert(conns, v)
+                        end
+                    end
+                end
+
+                if Options.marketFilter.Value and #Options.marketFilter.Value > 0 then
+                    for i,v in pairs(list) do
+                        if not v.Title.Text:lower():find(Options.marketFilter.Value:lower()) then
+                            v:Destroy()
+                        end
+                    end
+                end
+
+                setupvalue(func, 1, list)
+                setupvalue(func, 2, conns)
+                getupvalue(shop.Init, 1).Title.Text = "All Shops"
+                getupvalue(shop.Init, 1).Title.Overlay.Text = "All Shops"
+                
+            end)
+        end,
+        DoubleClick = false
+    })
 end
 
 -- Stats Tab
