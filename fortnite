@@ -1,7 +1,7 @@
 if game.gameId ~= 985731078 then
     return
 end
-print('Infinite | World Zero v4')
+print('Infinite | World Zero v5')
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
@@ -241,6 +241,20 @@ local dungeonEndTime = 0
 Shared.Missions.MissionStart.OnClientEvent:Once(function()
     MissionStarted = true
     dungeonStartTime = tick()
+    if Class == 'Demon' and DungeonID == 44 then
+        task.spawn(function()
+            while true do
+                if tick()-dungeonStartTime >= 8 then
+                    if Options.LifeStealInterval.Value > 1 then
+                        Library:Notify('Reduced LifeSteal Repeats to 1 to avoid client lag')
+                        Options.LifeStealInterval:SetValue(1)
+                    end
+                    break
+                end
+                task.wait()
+            end
+        end)
+    end
 end)
 --if MarketplaceService:UserOwnsGamePassAsync(UserId, DoubleDrop) then
 --    ChestName = 'lol'
@@ -959,11 +973,11 @@ local ClassData = {
         Type = 'Ranged',
         Primary = 'Staff',
         Skills = {
-            --{ Skill = 'MageOfShadows', Cooldown = 0.8 },
-            --{ Skill = 'MageOfShadowsBlast', Cooldown = 0.8 },
-            --{ Skill = 'BigShadowOrb1', Cooldown = 0.8 },
-            --{ Skill = 'BigShadowOrb2', Cooldown = 0.8 },
-            --{ Skill = 'BigShadowOrb3', Cooldown = 0.8 },
+            { Skill = 'MageOfShadows', Cooldown = 0.8 },
+            { Skill = 'MageOfShadowsBlast', Cooldown = 0.8 },
+            { Skill = 'BigShadowOrb1', Cooldown = 0.8 },
+            { Skill = 'BigShadowOrb2', Cooldown = 0.8 },
+            { Skill = 'BigShadowOrb3', Cooldown = 0.8 },
         }
     }
 }   
@@ -1047,14 +1061,14 @@ do
         Compact = true,
     })
 
-    --[[Farming:AddSlider('LifeStealInterval', {
+    Farming:AddSlider('LifeStealInterval', {
         Text = 'Life Steal Repeats',
         Default = 1,
         Min = 1,
-        Max = 10,
+        Max = 20,
         Rounding = 0,
         HideMax = true,
-    })]]
+    })
 
     Farming:AddToggle('Autofarm', {
         Text = 'Autofarm',
@@ -1782,6 +1796,9 @@ do
                 if DungeonID == 44 then
                     local vaneraids = game:GetService("ReplicatedStorage").Shared.LeaderboardHookup.GetScore:InvokeServer("VANE_KILLS",1)
                     completionStr = completionStr .. '\nVane Raids Completed Total: **' .. vaneraids[1] .. '**\nVane Raids Completed Daily: ' .. '**' .. vaneraids[2] .. '**'
+                    if Inventory:FindFirstChild('DragonCoin') and Inventory.DragonCoin:FindFirstChild('Count') then
+                        completionStr = completionStr .. '\nDragon Coins: ``' .. Inventory.DragonCoin.Count.Value .. '``'
+                    end
                 elseif DungeonID == 38 then
                     completionStr = completionStr ..  '\nFloor: **' .. ReplicatedStorage.ReplicateTowerFloor.Value .. '**'
                 end
