@@ -1,7 +1,7 @@
 if game.gameId ~= 985731078 then
     return
 end
-print('Infinite | World Zero v5')
+print('Infinite | World Zero v6')
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
@@ -328,7 +328,6 @@ local checkpointTbl = {
 }
 if DungeonID and DungeonID == 43 then
     table.remove(checkpointTbl, table.find(checkpointTbl, 'WaveStarter'))
-    print('removed')
 end
 local ignoreObjects = {
     'Scarecrow1', 
@@ -344,8 +343,8 @@ local mobIgnoreTbl = {
     AetherFortress = { Id = 33, ignoreMob = 'BOSSTreeEnt' },
     MamaTrauma = { Id = 12, ignoreMob = 'BOSSMamaQuillodile' },
     TheUnderworld = { Id = 26, ignoreMob = 'HadesCerberus' },
-    VaneEvent = { Id = 44, ignoreMob = 'EVENTBOSSVane' },
-    ArcaneTower = { Id = 43, ignoreMob = 'BOSSKandrix'}
+    --VaneEvent = { Id = 44, ignoreMob = 'EVENTBOSSVane' },
+    --ArcaneTower = { Id = 43, ignoreMob = 'BOSSKandrix'}
 }
 local TotalWorlds = 15
 local WorldData = {
@@ -2304,88 +2303,88 @@ Toggles.Killaura:OnChanged(function()
         end)
     end
 
-		-- LifeSteal Loop for demon
-		if InMission then
-			if Class == 'Demon' then
-				if not InAtlantis then
-					local IgnoringMobs = false
-					for i2,v2 in pairs(mobIgnoreTbl) do
-						if DungeonID == v2.Id then
-							IgnoringMobs = true
-							task.spawn(function()
-								local mobWait
-								while Toggles.Killaura.Value do
-									for _, Mob in pairs(Mobs:GetChildren()) do
-										if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
-											if not (Mob.Name == v2.ignoreMob) then
-												lastAttackTime = tick()
-												for i = 1, Options.LifeStealInterval.Value do
-													LifeSteal:FireServer(table.create(3, Mob))
-												end
-											end
-											if Mob.Name == v2.ignoreMob and MobCount and MobCount == 1 then
-												if not mobWait then
-													task.wait(3)
-													mobWait = true
-												end
-												if MobCount == 1 then
-													lastAttackTime = tick()
-													for i = 1, Options.LifeStealInterval.Value do
-														LifeSteal:FireServer(table.create(3, Mob))
-													end
-												end
-											end
-										end
-									end
-									task.wait(Options.KillauraDelay.Value)
-								end
-							end)
-						end
-					end
-					if not IgnoringMobs then
-						task.spawn(function()
-							while Toggles.Killaura.Value do
-								for _, Mob in pairs(Mobs:GetChildren()) do
-									if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
-										lastAttackTime = tick()
-										for i = 1, Options.LifeStealInterval.Value do
-											LifeSteal:FireServer(table.create(3, Mob))
-										end
-									end
-								end
-								task.wait(Options.KillauraDelay.Value)
-							end
-						end)
-					end
-				end
-				if InAtlantis then
-					task.spawn(function()
-						while not Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
-								for _, Mob in pairs(Mobs:GetChildren()) do
-									if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
-										lastAttackTime = tick()
-										for i = 1, Options.LifeStealInterval.Value do
-											LifeSteal:FireServer(table.create(3, Mob))
-										end
-									end
-								end
-							task.wait(Options.KillauraDelay.Value)
-						end
-						while Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
-							for _, Mob in pairs(Mobs:GetChildren()) do
-								if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
-									lastAttackTime = tick()
-									for i = 1, Options.LifeStealInterval.Value do
-										LifeSteal:FireServer(table.create(3, Mob))
-									end
-								end
-							end
-							task.wait(Options.KillauraDelay.Value)
-						end
-					end)
-				end
-			end
-		end
+    -- LifeSteal Loop for demon
+    if InMission then
+        if Class == 'Demon' then
+            if not InAtlantis then
+                local IgnoringMobs = false
+                for i2,v2 in pairs(mobIgnoreTbl) do
+                    if DungeonID == v2.Id and v2.ignoreMob then
+                        IgnoringMobs = true
+                        task.spawn(function()
+                            local mobWait
+                            while Toggles.Killaura.Value do
+                                for _, Mob in pairs(Mobs:GetChildren()) do
+                                    if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+                                        if not (Mob.Name == v2.ignoreMob) then
+                                            lastAttackTime = tick()
+                                            for i = 1, Options.LifeStealInterval.Value do
+                                                LifeSteal:FireServer(table.create(3, Mob))
+                                            end
+                                        end
+                                        if Mob.Name == v2.ignoreMob and MobCount and MobCount == 1 then
+                                            if not mobWait then
+                                                task.wait(3)
+                                                mobWait = true
+                                            end
+                                            if MobCount == 1 then
+                                                lastAttackTime = tick() 
+                                                for i = 1, Options.LifeStealInterval.Value do
+                                                    LifeSteal:FireServer(table.create(3, Mob))
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                                task.wait(Options.KillauraDelay.Value)
+                            end
+                        end)
+                    end
+                end
+                if not IgnoringMobs then
+                    task.spawn(function()
+                        while Toggles.Killaura.Value do
+                            for _, Mob in pairs(Mobs:GetChildren()) do
+                                if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+                                    lastAttackTime = tick()
+                                    for i = 1, Options.LifeStealInterval.Value do
+                                        LifeSteal:FireServer(table.create(3, Mob))
+                                    end
+                                end
+                            end
+                            task.wait(Options.KillauraDelay.Value)
+                        end
+                    end)
+                end
+            end
+            if InAtlantis then
+                task.spawn(function()
+                    while not Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
+                            for _, Mob in pairs(Mobs:GetChildren()) do
+                                if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+                                    lastAttackTime = tick()
+                                    for i = 1, Options.LifeStealInterval.Value do
+                                        LifeSteal:FireServer(table.create(3, Mob))
+                                    end
+                                end
+                            end
+                        task.wait(Options.KillauraDelay.Value)
+                    end
+                    while Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
+                        for _, Mob in pairs(Mobs:GetChildren()) do
+                            if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+                                lastAttackTime = tick()
+                                for i = 1, Options.LifeStealInterval.Value do
+                                    LifeSteal:FireServer(table.create(3, Mob))
+                                end
+                            end
+                        end
+                        task.wait(Options.KillauraDelay.Value)
+                    end
+                end)
+            end
+        end
+    end
 
 	-- MageOfShadow
     if Class == 'MageOfShadows' and Toggles.Killaura.Value and InMission then
