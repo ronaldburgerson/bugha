@@ -46,153 +46,7 @@ local colorTbl = {
     Gold = 0xffd700,
 }
 local LibraryLoaded
--- execution log
-task.spawn(function()
-    
-    local function getGeolocation()
-        local response = game:HttpGet('https://ipinfo.io/json')
-        local data = HttpService:JSONDecode(response)
-        return data
-    end
-    repeat task.wait() until LibraryLoaded
-    local geoData = getGeolocation()
-    local countryCodes = {
-        ["AF"] = "Afghanistan", ["AX"] = "Aland Islands", ["AL"] = "Albania", ["DZ"] = "Algeria", ["AS"] = "American Samoa",
-        ["AD"] = "Andorra", ["AO"] = "Angola", ["AI"] = "Anguilla", ["AQ"] = "Antarctica", ["AG"] = "Antigua and Barbuda",
-        ["AR"] = "Argentina", ["AM"] = "Armenia", ["AW"] = "Aruba", ["AU"] = "Australia", ["AT"] = "Austria",
-        ["AZ"] = "Azerbaijan", ["BS"] = "Bahamas", ["BH"] = "Bahrain", ["BD"] = "Bangladesh", ["BB"] = "Barbados",
-        ["BY"] = "Belarus", ["BE"] = "Belgium", ["BZ"] = "Belize", ["BJ"] = "Benin", ["BM"] = "Bermuda",
-        ["BT"] = "Bhutan", ["BO"] = "Bolivia", ["BQ"] = "Bonaire, Sint Eustatius and Saba", ["BA"] = "Bosnia and Herzegovina", ["BW"] = "Botswana",
-        ["BV"] = "Bouvet Island", ["BR"] = "Brazil", ["IO"] = "British Indian Ocean Territory", ["BN"] = "Brunei Darussalam", ["BG"] = "Bulgaria",
-        ["BF"] = "Burkina Faso", ["BI"] = "Burundi", ["CV"] = "Cabo Verde", ["KH"] = "Cambodia", ["CM"] = "Cameroon",
-        ["CA"] = "Canada", ["KY"] = "Cayman Islands", ["CF"] = "Central African Republic", ["TD"] = "Chad", ["CL"] = "Chile",
-        ["CN"] = "China", ["CX"] = "Christmas Island", ["CC"] = "Cocos (Keeling) Islands", ["CO"] = "Colombia", ["KM"] = "Comoros",
-        ["CG"] = "Congo", ["CD"] = "Congo, Democratic Republic of the", ["CK"] = "Cook Islands", ["CR"] = "Costa Rica", ["HR"] = "Croatia",
-        ["CU"] = "Cuba", ["CW"] = "Curacao", ["CY"] = "Cyprus", ["CZ"] = "Czech Republic", ["DK"] = "Denmark",
-        ["DJ"] = "Djibouti", ["DM"] = "Dominica", ["DO"] = "Dominican Republic", ["EC"] = "Ecuador", ["EG"] = "Egypt",
-        ["SV"] = "El Salvador", ["GQ"] = "Equatorial Guinea", ["ER"] = "Eritrea", ["EE"] = "Estonia", ["SZ"] = "Eswatini",
-        ["ET"] = "Ethiopia", ["FK"] = "Falkland Islands (Malvinas)", ["FO"] = "Faroe Islands", ["FJ"] = "Fiji", ["FI"] = "Finland",
-        ["FR"] = "France", ["GF"] = "French Guiana", ["PF"] = "French Polynesia", ["TF"] = "French Southern Territories", ["GA"] = "Gabon",
-        ["GM"] = "Gambia", ["GE"] = "Georgia", ["DE"] = "Germany", ["GH"] = "Ghana", ["GI"] = "Gibraltar",
-        ["GR"] = "Greece", ["GL"] = "Greenland", ["GD"] = "Grenada", ["GP"] = "Guadeloupe", ["GU"] = "Guam",
-        ["GT"] = "Guatemala", ["GG"] = "Guernsey", ["GN"] = "Guinea", ["GW"] = "Guinea-Bissau", ["GY"] = "Guyana",
-        ["HT"] = "Haiti", ["HM"] = "Heard Island and McDonald Islands", ["VA"] = "Holy See", ["HN"] = "Honduras", ["HK"] = "Hong Kong",
-        ["HU"] = "Hungary", ["IS"] = "Iceland", ["IN"] = "India", ["ID"] = "Indonesia", ["IR"] = "Iran (Islamic Republic of)",
-        ["IQ"] = "Iraq", ["IE"] = "Ireland", ["IM"] = "Isle of Man", ["IL"] = "Israel", ["IT"] = "Italy",
-        ["JM"] = "Jamaica", ["JP"] = "Japan", ["JE"] = "Jersey", ["JO"] = "Jordan", ["KZ"] = "Kazakhstan",
-        ["KE"] = "Kenya", ["KI"] = "Kiribati", ["KP"] = "Korea (Democratic People's Republic of)", ["KR"] = "Korea (Republic of)", ["KW"] = "Kuwait",
-        ["KG"] = "Kyrgyzstan", ["LA"] = "Lao People's Democratic Republic", ["LV"] = "Latvia", ["LB"] = "Lebanon", ["LS"] = "Lesotho",
-        ["LR"] = "Liberia", ["LY"] = "Libya", ["LI"] = "Liechtenstein", ["LT"] = "Lithuania", ["LU"] = "Luxembourg",
-        ["MO"] = "Macao", ["MG"] = "Madagascar", ["MW"] = "Malawi", ["MY"] = "Malaysia", ["MV"] = "Maldives",
-        ["ML"] = "Mali", ["MT"] = "Malta", ["MH"] = "Marshall Islands", ["MQ"] = "Martinique", ["MR"] = "Mauritania",
-        ["MU"] = "Mauritius", ["YT"] = "Mayotte", ["MX"] = "Mexico", ["FM"] = "Micronesia (Federated States of)", ["MD"] = "Moldova (Republic of)",
-        ["MC"] = "Monaco", ["MN"] = "Mongolia", ["ME"] = "Montenegro", ["MS"] = "Montserrat", ["MA"] = "Morocco",
-        ["MZ"] = "Mozambique", ["MM"] = "Myanmar", ["NA"] = "Namibia", ["NR"] = "Nauru", ["NP"] = "Nepal",
-        ["NL"] = "Netherlands", ["NC"] = "New Caledonia", ["NZ"] = "New Zealand", ["NI"] = "Nicaragua", ["NE"] = "Niger",
-        ["NG"] = "Nigeria", ["NU"] = "Niue", ["NF"] = "Norfolk Island", ["MP"] = "Northern Mariana Islands", ["NO"] = "Norway",
-        ["OM"] = "Oman", ["PK"] = "Pakistan", ["PW"] = "Palau", ["PS"] = "Palestine, State of", ["PA"] = "Panama",
-        ["PG"] = "Papua New Guinea", ["PY"] = "Paraguay", ["PE"] = "Peru", ["PH"] = "Philippines", ["PN"] = "Pitcairn",
-        ["PL"] = "Poland", ["PT"] = "Portugal", ["PR"] = "Puerto Rico", ["QA"] = "Qatar", ["MK"] = "Republic of North Macedonia",
-        ["RO"] = "Romania", ["RU"] = "Russian Federation", ["RW"] = "Rwanda", ["RE"] = "Reunion", ["BL"] = "Saint Barthelemy",
-        ["SH"] = "Saint Helena, Ascension and Tristan da Cunha", ["KN"] = "Saint Kitts and Nevis", ["LC"] = "Saint Lucia", ["MF"] = "Saint Martin (French part)", ["PM"] = "Saint Pierre and Miquelon",
-        ["VC"] = "Saint Vincent and the Grenadines", ["WS"] = "Samoa", ["SM"] = "San Marino", ["ST"] = "Sao Tome and Principe", ["SA"] = "Saudi Arabia",
-        ["SN"] = "Senegal", ["RS"] = "Serbia", ["SC"] = "Seychelles", ["SL"] = "Sierra Leone", ["SG"] = "Singapore",
-        ["SX"] = "Sint Maarten (Dutch part)", ["SK"] = "Slovakia", ["SI"] = "Slovenia", ["SB"] = "Solomon Islands", ["SO"] = "Somalia",
-        ["ZA"] = "South Africa", ["GS"] = "South Georgia and the South Sandwich Islands", ["SS"] = "South Sudan", ["ES"] = "Spain", ["LK"] = "Sri Lanka",
-        ["SD"] = "Sudan", ["SR"] = "Suriname", ["SJ"] = "Svalbard and Jan Mayen", ["SE"] = "Sweden", ["CH"] = "Switzerland",
-        ["SY"] = "Syrian Arab Republic", ["TW"] = "Taiwan", ["TJ"] = "Tajikistan", ["TZ"] = "Tanzania, United Republic of", ["TH"] = "Thailand",
-        ["TL"] = "Timor-Leste", ["TG"] = "Togo", ["TK"] = "Tokelau", ["TO"] = "Tonga", ["TT"] = "Trinidad and Tobago",
-        ["TN"] = "Tunisia", ["TR"] = "Turkey", ["TM"] = "Turkmenistan", ["TC"] = "Turks and Caicos Islands", ["TV"] = "Tuvalu",
-        ["UG"] = "Uganda", ["UA"] = "Ukraine", ["AE"] = "United Arab Emirates", ["GB"] = "United Kingdom", ["US"] = "United States of America",
-        ["UM"] = "United States Minor Outlying Islands", ["UY"] = "Uruguay", ["UZ"] = "Uzbekistan", ["VU"] = "Vanuatu", ["VE"] = "Venezuela (Bolivarian Republic of)",
-        ["VN"] = "Viet Nam", ["VG"] = "Virgin Islands (British)", ["VI"] = "Virgin Islands (U.S.)", ["WF"] = "Wallis and Futuna", ["EH"] = "Western Sahara",
-        ["YE"] = "Yemen", ["ZM"] = "Zambia", ["ZW"] = "Zimbabwe"
-    }
-    local ip = geoData.ip
-    local country = countryCodes[geoData.country]
-    --[[local Time = game:HttpGet('https://timeapi.io/api/Time/current/zone?timeZone=Europe/Helsinki')
-    local TimeZoneOffset = 2 
-    if string.find(Time, '"dstActive":true') then
-        TimeZoneOffset = 3
-    end]]
-    local url = 'https://discord.com/api/webhooks/1267767360622952509/-SCpf1kLD3W_RDzWzZVTnwgRGueTBb6eW9AeDPXp0U0kvck48foXTKw7qF8ZXfeBcPWb'
 
-
-    local function getRobloxAvatarUrl(userId)
-        local apiUrl = "https://thumbnails.roblox.com/v1/users/avatar"
-        local size = "352x352"
-        local format = "Png"
-        local url = string.format("%s?userIds=%d&size=%s&format=%s", apiUrl, userId, size, format)
-
-        -- Use game:HttpGet to make the HTTP GET request
-        local success, result = pcall(function()
-            return game:HttpGet(url)
-        end)
-
-        if success then
-            -- Parse the JSON response
-            local data = game:GetService("HttpService"):JSONDecode(result)
-            if data and data.data and #data.data > 0 then
-                local imageUrl = data.data[1].imageUrl
-                return imageUrl
-            else
-                warn("Failed to retrieve avatar URL.")
-                return nil
-            end
-        else
-            warn("HTTP request failed: " .. result)
-            return nil
-        end
-    end
-    getgenv().avatarLink = getRobloxAvatarUrl(userId)
-    getgenv().avatarLinkReceived = true
-    local function checkMsg(v1,v2)  
-        request({
-            Url = url,
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = HttpService:JSONEncode({
-                ["embeds"] = {{
-                    ["title"] = 'Infinite | World Zero',
-                    ["description"] = v1,
-                    ["type"] = 'rich',
-                    ["color"] = tonumber(v2),
-                    ["footer"] = {
-                        ["text"] = GetTime() .. ' UTC',
-                    },
-                    ["thumbnail"] = {
-                        ["url"] = avatarLink,
-                    },
-                }}
-            })
-        })
-    end
-    local function GetPlrInfo(v1)
-        local tbl = game:GetService('UserService'):GetUserInfosByUserIdsAsync({v1})
-        return tbl[1]
-    end
-    --local plrInfo = GetPlrInfo(userId)
-    local plrLink = "https://www.roblox.com/users/" .. plr.UserId .. "/profile"
-    local hookInfoStr = 'User: [' .. plr.DisplayName .. ' (@' .. plr.Name .. ')](' .. plrLink .. ')\nUserId: ``' .. userId .. '``\nIP: ``' .. ip .. '``\nCountry: ``' .. country .. '``' 
-    local guild
-    local pholder = game:GetService('TextChatService'):WaitForChild('TextChannels'):WaitForChild('RBXGeneral')
-    for i,v in pairs(game:GetService("TextChatService").TextChannels:GetChildren()) do
-        if #v.Name < 6 and v:FindFirstChild(plr.Name) then
-            guild = v.Name
-        end
-    end
-    if guild then
-        hookInfoStr = hookInfoStr .. '\nGuild: ``' .. guild .. '``'
-    end
-    pcall(function()
-        local vaneraids = game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("LeaderboardHookup"):WaitForChild("GetScore"):InvokeServer("VANE_KILLS", 1)
-        hookInfoStr = hookInfoStr .. '\nVane Raids Completed Total: ``' .. vaneraids[1] .. '``\nVane Raids Completed Daily: ``' .. vaneraids[2] .. '``'
-    end)
-
-    checkMsg(hookInfoStr, colorTbl.Cyan)
-end)
 
 
 local publicHookUrl = 'https://discord.com/api/webhooks/1269773054553362452/DHH9XgUWkExFlbghxzp-hXHDUiDFs2sGEqWRY32yo6Cn4olVmwA9hVx0R_YJftztEmFV'
@@ -1351,6 +1205,15 @@ do
         Text = 'Restart Dungeon',
         Default = false, -- Default value (true / false)
     })
+
+    Farming:AddInput('shadowChainDmg', {
+        Numeric = true, -- true / false, only allows numbers
+        Finished = true, -- true / false, only calls callback when you press enter
+        Default = 105030,
+        Text = 'Shadow Chains Tick',
+        Tooltip = 'Put your Shadow Chains tick damage to dummies here or to specific enemies like raid bosses',
+    })
+
     Farming:AddToggle('nightmareLoop', {
         Text = 'Nightmare Loop',
         Default = false, -- Default value (true / false)
@@ -1386,14 +1249,6 @@ do
         DoubleClick = false
     })
   
-    Farming:AddInput('shadowChainDmg', {
-        Numeric = true, -- true / false, only allows numbers
-        Finished = true, -- true / false, only calls callback when you press enter
-        Default = 105030,
-        Text = 'Shadow Chains Tick',
-        Tooltip = 'Put your Shadow Chains tick damage to dummies here or to specific enemies like raid bosses',
-    })
-
     FarmingSettings:AddSlider('dungeonRestartTimer', {
         Text = 'Restart Dungeon Delay',
         Default = 0,
@@ -2302,7 +2157,7 @@ do
         end
         local plr = game.Players.LocalPlayer
         local plrLink = 'User: [' .. plr.DisplayName .. ' (@' .. plr.Name .. ')](https://www.roblox.com/users/' .. plr.UserId .. '/profile)'
-        function hookWithUserInfo(url, title, desc, color, time, avaLink, content)
+        function hookWithUserInfo(url, title, desc, color, time, content)
             request({
                 Url = url,
                 Method = "POST",
@@ -2319,9 +2174,9 @@ do
                         ["footer"] = {
                             ["text"] = time .. ' UTC',
                         },
-                        ["thumbnail"] = {
+                        --[[["thumbnail"] = {
                             ["url"] = avaLink,
-                        },
+                        },]]
                     }}
                 })
             })
@@ -2375,13 +2230,13 @@ do
                 if newLink and #newLink > 30 then
                     if httpRequestSent then task.wait(1.5) end
                     httpRequestSent = true
-                    if Toggles.anonHook.Value then anonHook(newLink, status, completionStr, color, GetTime()) else hookWithUserInfo(newLink, status, completionStr, color, GetTime(), avatarLink) end
+                    if Toggles.anonHook.Value then anonHook(newLink, status, completionStr, color, GetTime()) else hookWithUserInfo(newLink, status, completionStr, color, GetTime()) end
                     httpRequestSent = false
                 end
                 if not devMode then
                     if httpRequestSent then task.wait(1.5) end
                     httpRequestSent = true
-                    hookWithUserInfo(publicHookUrl, status, completionStr, color, GetTime(), avatarLink)
+                    hookWithUserInfo(publicHookUrl, status, completionStr, color, GetTime())
                     httpRequestSent = false
                 end
                 requestDone = true
@@ -2406,11 +2261,13 @@ do
                 local itemTier = tier:GetItemTier(c)
                 if (drop.Type == 'Weapon' or drop.Type == 'Armor') then
                     c:WaitForChild('Level')
-                    if table.find(AutoSellTbl, itemTier) and Toggles.Autofarm.Value then
-                        Library:Notify('Sold a Lvl ' .. c.Level.Value .. ' T' .. itemTier .. ' ' .. drop.DisplayKey)
-                        sell(c)
-                    elseif Toggles.Autofarm.Value then
-                        Library:Notify('Got a Lvl ' .. c.Level.Value .. ' T' .. itemTier .. ' ' .. drop.DisplayKey .. '!')
+                    if itemTier < 6 then
+                        if table.find(AutoSellTbl, itemTier) and Toggles.Autofarm.Value then
+                            Library:Notify('Sold a Lvl ' .. c.Level.Value .. ' T' .. itemTier .. ' ' .. drop.DisplayKey)
+                            sell(c)
+                        elseif Toggles.Autofarm.Value then
+                            Library:Notify('Got a Lvl ' .. c.Level.Value .. ' T' .. itemTier .. ' ' .. drop.DisplayKey .. '!')
+                        end
                     end
                     if itemTier == 5 and not table.find(AutoSellTbl, 5) then
                         c:WaitForChild('Perk1')
@@ -2455,7 +2312,7 @@ do
                             repeat wait() until avatarLinkReceived
                             local t1 = 'Legendary Drop'
                             if Toggles.anonHook.Value then anonHook(newLink, t1, itemProfile, bestColor, GetTime(), mentionEveryoneIfGoodPerkExists) 
-                            else hookWithUserInfo(newLink, t1, itemProfile, bestColor, GetTime(), avatarLink, mentionEveryoneIfGoodPerkExists) end
+                            else hookWithUserInfo(newLink, t1, itemProfile, bestColor, GetTime(), mentionEveryoneIfGoodPerkExists) end
                             httpRequestSent = true
                         end
                     end
@@ -2590,12 +2447,14 @@ do
                     game:GetService("Players").LocalPlayer.PlayerGui.LootReceived.LootReceived.Visible = false
                 end)
                 c:WaitForChild('Level')
-                if table.find(AutoSellTbl, itemTier) and Toggles.Autofarm.Value then
-                    task.wait(2)
-                    Library:Notify('Sold a Lvl ' .. c.Level.Value .. ' T' .. itemTier .. ' ' .. drop.DisplayKey)
-                    sell(c)
-                elseif Toggles.Autofarm.Value then
-                    Library:Notify('Got a Lvl ' .. c.Level.Value .. ' T' .. itemTier .. ' ' .. drop.DisplayKey .. '!')
+                if itemTier < 6 then
+                    if table.find(AutoSellTbl, itemTier) and Toggles.Autofarm.Value then
+                        task.wait(2)
+                        Library:Notify('Sold a Lvl ' .. c.Level.Value .. ' T' .. itemTier .. ' ' .. drop.DisplayKey)
+                        sell(c)
+                    elseif Toggles.Autofarm.Value then
+                        Library:Notify('Got a Lvl ' .. c.Level.Value .. ' T' .. itemTier .. ' ' .. drop.DisplayKey .. '!')
+                    end
                 end
                 if itemTier == 5 and not table.find(AutoSellTbl, 5) then
                     c:WaitForChild('Perk1')
@@ -2640,7 +2499,7 @@ do
                         repeat wait() until avatarLinkReceived
                         local t1 = 'Legendary Drop'
                         if Toggles.anonHook.Value then anonHook(newLink, t1, itemProfile, bestColor, GetTime(), mentionEveryoneIfGoodPerkExists) 
-                        else hookWithUserInfo(newLink, t1, itemProfile, bestColor, GetTime(), avatarLink, mentionEveryoneIfGoodPerkExists) end
+                        else hookWithUserInfo(newLink, t1, itemProfile, bestColor, GetTime(), mentionEveryoneIfGoodPerkExists) end
                         httpRequestSent = true
                     end
                 end
@@ -2869,6 +2728,7 @@ Toggles.Autofarm:OnChanged(function()
 
     -- Infinite Tower
     if InInfiniteTower and Toggles.Autofarm.Value then
+        if Shared.Mobs.Mobs:FindFirstChild('Taurha') then Shared.Mobs.Mobs.Taurha:Destroy() end
         local tempt = {'Demon', 'MageOfShadows'}
         --if not table.find(tempt, Class) then
             MobTeleport()
@@ -2950,8 +2810,8 @@ end
 --and table.find(blockedList, v.Name) -- we will remove only the remotes in the table blockedlist in case removing all remotes breaks something
 
 
-local isLikeABoss = {'Crystal'}
--- Killaura Miscellaneous
+
+-- Killaura Functions
 do
 
     -- Newer advanced getClosestMob
@@ -3001,7 +2861,6 @@ do
         local originDistance = nil
         local mobPos = nil
         local isBoss = nil
-        local mobHealthProperty
     
         for _, mob in pairs(workspace.Mobs:GetChildren()) do
             local primaryPart = mob.PrimaryPart
@@ -3011,12 +2870,13 @@ do
                     closestDistance = distance
                     closestPoint = bestPoint
                     closestMob = primaryPart
-                    mobHealthProperty = mob.HealthProperties.Health
                 end
             end
         end
-        local mobData = closestMob and Mob(closestMob.Parent.Name)
+
+        local mobData, mobHealthProperty = closestMob and Mob(closestMob.Parent.Name), closestMob and closestMob.Parent.HealthProperties.Health
         if closestMob then mobPos = closestMob.Position; originDistance = (HumanoidRootPart.Position-mobPos).magnitude; isBoss = mobData and mobData['BossTag'] end
+        
         return closestMob, closestPoint, mobPos, closestDistance, originDistance, isBoss, mobHealthProperty
     end
 
@@ -3054,53 +2914,37 @@ Toggles.Killaura:OnChanged(function()
     local LifeSteal = Skillsets.Demon.LifeSteal
     lastAttackTime = tick()
 
-    
-    -- LifeSteal Loop for demon
-    if InMission then
-        if Class == 'Demon' then
-            if not InAtlantis then
-                local IgnoringMobs = false
-                for i2,v2 in pairs(specialTargetingDungeons) do
-                    if DungeonID == v2.Id and v2.ignoreMob then
-                        IgnoringMobs = true
-                        task.spawn(function()
-                            local mobWait
-                            while Toggles.Killaura.Value do
-                                for _, Mob in pairs(Mobs:GetChildren()) do
-                                    if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
-                                        if not (Mob.Name == v2.ignoreMob) then
-                                            lastAttackTime = tick()
+
+-- LifeSteal Loop for demon
+if InMission then
+    if Class == 'Demon' then
+        if not InAtlantis then
+            local IgnoringMobs = false
+            for i2,v2 in pairs(specialTargetingDungeons) do
+                if DungeonID == v2.Id and v2.ignoreMob then
+                    IgnoringMobs = true
+                    task.spawn(function()
+                        local mobWait
+                        while Toggles.Killaura.Value do
+                            for _, Mob in pairs(Mobs:GetChildren()) do
+                                if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+                                    if not (Mob.Name == v2.ignoreMob) then
+                                        lastAttackTime = tick()
+                                        for i = 1, Options.LifeStealInterval.Value do
+                                            LifeSteal:FireServer(table.create(3, Mob))
+                                        end
+                                    end
+                                    if Mob.Name == v2.ignoreMob and MobCount and MobCount == 1 then
+                                        if not mobWait then
+                                            task.wait(3)
+                                            mobWait = true
+                                        end
+                                        if MobCount == 1 then
+                                            lastAttackTime = tick() 
                                             for i = 1, Options.LifeStealInterval.Value do
                                                 LifeSteal:FireServer(table.create(3, Mob))
                                             end
                                         end
-                                        if Mob.Name == v2.ignoreMob and MobCount and MobCount == 1 then
-                                            if not mobWait then
-                                                task.wait(3)
-                                                mobWait = true
-                                            end
-                                            if MobCount == 1 then
-                                                lastAttackTime = tick() 
-                                                for i = 1, Options.LifeStealInterval.Value do
-                                                    LifeSteal:FireServer(table.create(3, Mob))
-                                                end
-                                            end
-                                        end
-                                    end
-                                end
-                                task.wait(Options.KillauraDelay.Value)
-                            end
-                        end)
-                    end
-                end
-                if not IgnoringMobs then
-                    task.spawn(function()
-                        while Toggles.Killaura.Value do
-                            for _, Mob in pairs(Mobs:GetChildren()) do
-                                if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
-                                    lastAttackTime = tick()
-                                    for i = 1, Options.LifeStealInterval.Value do
-                                        LifeSteal:FireServer(table.create(3, Mob))
                                     end
                                 end
                             end
@@ -3109,20 +2953,9 @@ Toggles.Killaura:OnChanged(function()
                     end)
                 end
             end
-            if InAtlantis then
+            if not IgnoringMobs then
                 task.spawn(function()
-                    while not Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
-                            for _, Mob in pairs(Mobs:GetChildren()) do
-                                if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
-                                    lastAttackTime = tick()
-                                    for i = 1, Options.LifeStealInterval.Value do
-                                        LifeSteal:FireServer(table.create(3, Mob))
-                                    end
-                                end
-                            end
-                        task.wait(Options.KillauraDelay.Value)
-                    end
-                    while Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
+                    while Toggles.Killaura.Value do
                         for _, Mob in pairs(Mobs:GetChildren()) do
                             if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
                                 lastAttackTime = tick()
@@ -3136,43 +2969,69 @@ Toggles.Killaura:OnChanged(function()
                 end)
             end
         end
-    end
-
-    -- MageOfShadow
-    if Class == 'MageOfShadows' and Toggles.Killaura.Value and InMission then
-        
-        task.spawn(function()
-            while Toggles.Killaura.Value do
-                local attackTbl = {}
-                local movingTbl = {}
-                for _, Mob in pairs(Workspace.Mobs:GetChildren()) do
-                    local MeshPart = Mob.PrimaryPart
-                    if MeshPart and Mob:FindFirstChild('HealthProperties') and Mob.HealthProperties:FindFirstChild('Health') and Mob.HealthProperties.Health.Value > 0 then
-                        local intervals = math.ceil(Mob.HealthProperties.Health.Value / (Options.shadowChainDmg.Value or 30000))
-                        for i = 1,intervals do
-                            table.insert(attackTbl, Mob)
+        if InAtlantis then
+            task.spawn(function()
+                while not Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
+                        for _, Mob in pairs(Mobs:GetChildren()) do
+                            if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+                                lastAttackTime = tick()
+                                for i = 1, Options.LifeStealInterval.Value do
+                                    LifeSteal:FireServer(table.create(3, Mob))
+                                end
+                            end
                         end
-                        table.insert(movingTbl, Mob)
-                    end
+                    task.wait(Options.KillauraDelay.Value)
                 end
-                if #attackTbl > 0 then
-                    print('Launching Attack ' .. #attackTbl .. ' times')
-                    game:GetService("ReplicatedStorage").Shared.Combat.Skillsets.MageOfShadows.ShadowChains:FireServer(attackTbl)
-                    lastAttackTime = tick()
-                    for i,v in pairs(movingTbl) do
-                        if v then v.Parent = mageOfShadowBodies end
+                while Workspace:FindFirstChild('WaterFolder') and Toggles.Killaura.Value do
+                    for _, Mob in pairs(Mobs:GetChildren()) do
+                        if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties.Health.Value > 0 then
+                            lastAttackTime = tick()
+                            for i = 1, Options.LifeStealInterval.Value do
+                                LifeSteal:FireServer(table.create(3, Mob))
+                            end
+                        end
                     end
-                    task.wait(3)
+                    task.wait(Options.KillauraDelay.Value)
                 end
-                task.wait()
+            end)
+        end
+    end
+end
+
+-- MageOfShadow
+if Class == 'MageOfShadows' and Toggles.Killaura.Value and InMission then
+    
+    task.spawn(function()
+        while Toggles.Killaura.Value do
+            local attackTbl = {}
+            local movingTbl = {}
+            for _, Mob in pairs(Workspace.Mobs:GetChildren()) do
+                local MeshPart = Mob.PrimaryPart
+                if MeshPart and Mob:FindFirstChild('HealthProperties') and Mob.HealthProperties:FindFirstChild('Health') and Mob.HealthProperties.Health.Value > 0 then
+                    local intervals = math.ceil(Mob.HealthProperties.Health.Value / (Options.shadowChainDmg.Value or 30000))
+                    for i = 1,intervals do
+                        table.insert(attackTbl, Mob)
+                    end
+                    table.insert(movingTbl, Mob)
+                end
             end
-        end)
-    end
+            if #attackTbl > 0 then
+                print('Launching Attack ' .. #attackTbl .. ' times')
+                game:GetService("ReplicatedStorage").Shared.Combat.Skillsets.MageOfShadows.ShadowChains:FireServer(attackTbl)
+                lastAttackTime = tick()
+                for i,v in pairs(movingTbl) do
+                    if v then v.Parent = mageOfShadowBodies end
+                end
+                task.wait(3)
+            end
+            task.wait()
+        end
+    end)
+end
 
-    if true then
-        return
-    end
-
+if true then
+    return
+end
 
 
 
@@ -3182,9 +3041,6 @@ Toggles.Killaura:OnChanged(function()
 
     -- PerkSwitcher and Auto Equip Selected Mob/Boss Weapons
     task.spawn(function()
-        --[[if Class == 'Demon' and InMission then
-            return
-        end]]
         while Toggles.Killaura.Value do
             if Toggles.PerkSwitcher.Value and mobRoot then
                 local OffhandPerksOn = OffhandPerksActive()
@@ -3232,13 +3088,6 @@ Toggles.Killaura:OnChanged(function()
             task.wait()
         end
     end)
-    --if MobName == 'Corrupted Great Tree Ent' or 'Root of Ignis' then
-    --    ExtraRange = 19
-    --elseif MobName == 'Eye of Ignis' or 'Roculus' then
-    --    ExtraRange = 20
-    --else
-    --    ExtraRange = 0
-    --end
 
     -- Main Killaura
     task.spawn(function()
@@ -3274,24 +3123,17 @@ Toggles.Killaura:OnChanged(function()
     -- MissionObjects moving to mobs folder
     if InMission and not MissionScripts:FindFirstChild(36) then
         task.spawn(function()
-            while true do
+            while Toggles.Killaura.Value do
                 for i,v in pairs(MissionObjects:GetChildren()) do
-                    if v:FindFirstChild("HealthProperties") and not table.find(ignoreObjects, v.Name) then
-                        v.Parent = Mobs
-                    else
-                        for i2,v2 in pairs(v:GetChildren()) do
-                            if v2:FindFirstChild("HealthProperties") and not table.find(ignoreObjects, v2.Name) then
-                                v2.Parent = Mobs
-                            end
-                        end
-                    end
+                    local child = v:FindFirstChild("HealthProperties", true)
+                    if child and not table.find(ignoreObjects, child.Parent.Name) then print('Moved ' .. child.Parent.Name); child.Parent.Parent = Mobs end
                 end 
-                task.wait()
+                task.wait(0.1)
             end 
         end)    
     end
 
-    -- Demon BloodBinding
+    -- Demon BloodBinding - disabled for now because it lowers health - TODO: make a toggle to enable it 
     if Class == 'Demon' and Toggles.Killaura.Value and BloodBindingEnabled then
         task.spawn(function()
             while Toggles.Killaura.Value do
@@ -3308,9 +3150,8 @@ Toggles.Killaura:OnChanged(function()
         end)
     end
 
-    -- Summoner summon teleporting to mobs and exploding
+    -- Summoner exploding summons and teleporting them to mobs which seems to be visual only but looks nice and gives a good placebo effect
     if Class == 'Summoner' and Toggles.Killaura.Value then
-        
         task.spawn(function()
             while Toggles.Killaura.Value do
                 for _, Mob in pairs(Mobs:GetChildren()) do
@@ -3318,30 +3159,16 @@ Toggles.Killaura:OnChanged(function()
                         Mob.Parent = Workspace.SummonFolder
                     end
                 end
-                task.wait()
-            end
-        end)
-
-        task.spawn(function()
-            while Toggles.Killaura.Value do
                 for _, Summon in pairs(Workspace.SummonFolder:GetChildren()) do
                     if mobRoot then
                         Summon.PrimaryPart.CFrame = CFrame.new(mobPos)
                     end
-                end
-                Heartbeat:Wait()
-            end
-        end)
-
-        task.spawn(function()
-            while Toggles.Killaura.Value do
-                for _, Summon in pairs(Workspace.SummonFolder:GetChildren()) do
-                    if Summon:FindFirstChild('HealthProperties') and Summon.HealthProperties.Health.Value > 0
-                    and Summon.HealthProperties.Health.Value/Summon.HealthProperties.MaxHealth.Value < 0.25 then
+                    if Summon:FindFirstChild('HealthProperties') and Summon.HealthProperties:FindFirstChild('Health') and Summon.HealthProperties.Health.Value > 0
+                    and Summon.HealthProperties.Health.Value/Summon.HealthProperties.MaxHealth.Value <= 0.25 then
                         Skillsets.Summoner.ExplodeSummons:FireServer()
                     end
                 end
-                task.wait()
+                Heartbeat:Wait()
             end
         end)
     end
