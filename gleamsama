@@ -6,7 +6,7 @@ if not game:IsLoaded() then
 end
 
 local devMode = true
-
+print('Secret Infinite World Zero Script v10')
 local Players = game:GetService('Players')
 local LocalPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal('LocalPlayer'):Wait() or Players.LocalPlayer
 local plr = LocalPlayer
