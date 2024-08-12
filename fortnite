@@ -1871,9 +1871,9 @@ do
                             ["footer"] = {
                                 ["text"] = GetTime() .. ' UTC',
                             },
-                            ["thumbnail"] = {
+                            --[[["thumbnail"] = {
                                 ["url"] = avatarLink,
-                            },
+                            },]]
                         }}
                     })
                 })
