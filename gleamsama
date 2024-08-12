@@ -6,7 +6,7 @@ if not game:IsLoaded() then
 end
 
 local devMode = true
-print('Secret Infinite World Zero Script v10')
+print('Secret Infinite World Zero Script v11')
 local Players = game:GetService('Players')
 local LocalPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal('LocalPlayer'):Wait() or Players.LocalPlayer
 local plr = LocalPlayer
@@ -2225,8 +2225,7 @@ do
                 elseif DungeonID == 38 then
                     completionStr = completionStr ..  '\nFloor: **' .. ReplicatedStorage.ReplicateTowerFloor.Value .. '**'
                 end
-                if not Toggles.anonHook.Value then completionStr = completionStr .. '\n' .. plrLink end
-                repeat wait() until avatarLinkReceived 
+                if not Toggles.anonHook.Value then completionStr = completionStr .. '\n' .. plrLink end 
                 if newLink and #newLink > 30 then
                     if httpRequestSent then task.wait(1.5) end
                     httpRequestSent = true
@@ -2309,7 +2308,6 @@ do
                             local bestColor = perfPerkExists and colorTbl.Gold or goodPerkExists and colorTbl.Green or colorTbl.Cyan
                             if httpRequestSent then task.wait(1.5) end
                             httpRequestSent = true
-                            repeat wait() until avatarLinkReceived
                             local t1 = 'Legendary Drop'
                             if Toggles.anonHook.Value then anonHook(newLink, t1, itemProfile, bestColor, GetTime(), mentionEveryoneIfGoodPerkExists) 
                             else hookWithUserInfo(newLink, t1, itemProfile, bestColor, GetTime(), mentionEveryoneIfGoodPerkExists) end
@@ -2496,7 +2494,6 @@ do
                         local bestColor = perfPerkExists and colorTbl.Gold or goodPerkExists and colorTbl.Green or colorTbl.Cyan
                         if httpRequestSent then task.wait(1.5) end
                         httpRequestSent = true
-                        repeat wait() until avatarLinkReceived
                         local t1 = 'Legendary Drop'
                         if Toggles.anonHook.Value then anonHook(newLink, t1, itemProfile, bestColor, GetTime(), mentionEveryoneIfGoodPerkExists) 
                         else hookWithUserInfo(newLink, t1, itemProfile, bestColor, GetTime(), mentionEveryoneIfGoodPerkExists) end
