@@ -4,7 +4,7 @@ end
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
-print('Infinite Private World Zero v25')
+print('Infinite Private World Zero v26')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -2761,8 +2761,9 @@ Toggles.Autofarm:OnChanged(function(togl)
         task.spawn(function()
             while Toggles.Autofarm.Value do
                 if AtlantisBossCheck and TeleportingToMob and not vulnerableTentacleFound and not PipePause then
-                    for i,v in pairs(Mobs:GetChildren()) do
-                        if v:FindFirstChild("HealthProperties") and v.HealthProperties:FindFirstChild('Health')and v.HealthProperties.Health.Value > 0 
+                    local mobTbl = Mobs:GetChildren()
+                    for i,v in pairs(mobTbl) do
+                        if v:FindFirstChild("HealthProperties") and v.HealthProperties:FindFirstChild('Health') and v.HealthProperties.Health.Value > 0 
                         and not (v.MobProperties.CurrentAttack.Value == 'Piledriver' or v.MobProperties.CurrentAttack.Value == 'Slap') then
                             local mobRoot = v.PrimaryPart
                             if mobRoot and not vulnerableTentacleFound and not PipePause and TeleportingToMob then
@@ -2772,6 +2773,10 @@ Toggles.Autofarm:OnChanged(function(togl)
                                 task.wait(0.25)
                             end
                         end
+                    end
+                    if mobRoot and not vulnerableTentacleFound and not PipePause and TeleportingToMob and #mobTbl == 1 then
+                        SmartPlayerTp(CFrame.new(3371, 73, -331))
+                        task.wait(0.15)
                     end
                 end
                 task.wait()
