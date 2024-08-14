@@ -4,7 +4,7 @@ end
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
-print('Infinite Private World Zero v14')
+print('Infinite Private World Zero v15')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -1669,7 +1669,7 @@ do
                 end)
             end
         end,
-        DoubleClick = false
+        DoubleClick = true,
     })
 
     local DiscoverDungeon = Miscellaneous:AddButton({
@@ -1689,7 +1689,7 @@ do
         DoubleClick = true,
     })
 
-    local DisableAnticheat = Miscellaneous:AddButton({
+    --[[local DisableAnticheat = Miscellaneous:AddButton({
         Text = 'Disable Anti-TP',
         Func = function()
             if not InMission then
@@ -1704,7 +1704,7 @@ do
             end
         end,
         DoubleClick = false
-    })
+    })]]
 
     Miscellaneous:AddDivider()
     Miscellaneous:AddToggle('autoHide', {
