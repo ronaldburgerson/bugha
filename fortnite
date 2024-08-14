@@ -4,7 +4,7 @@ end
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
-
+print('Infinite Private World Zero v13')
 local devMode = true
 
 local Players = game:GetService('Players')
