@@ -4,7 +4,7 @@ end
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
-print('Infinite Private World Zero v20')
+print('Infinite Private World Zero v21')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -427,11 +427,7 @@ local Nightmares = {1005, 1006, 1007}
 local Inventory = Profile:WaitForChild('Inventory'):WaitForChild('Items')
 local MissionData = require(Shared.Missions.MissionData)
 local function missionLevelReq(missionId)
-    for i,v in pairs(MissionData) do
-        if v.ID == missionId then
-            return v.LevelRequirement
-        end
-    end
+    return MissionData[missionId].LevelRequirement
 end
 local PerkData = require(Shared.Gear.GearPerks)
 local items = require(Shared.Items)
@@ -2413,10 +2409,11 @@ do
                 if nextNightmareId then StartRaid(nextNightmareId, DifficultyID) else StartRaid(1005, DifficultyID) end
             elseif Toggles.NextDungeon.Value and Toggles.Autofarm.Value and DungeonID ~= 38 then
                 local nextDungeonId = nextDungeonTbl[table.find(nextDungeonTbl, DungeonID)+1]
-                local canJoinNextDungeon = Profile.Level.Value >= missionLevelReq(nextDungeonId)
                 local isTowerNext = table.find(Towers2, nextDungeonId)
-                local joiningDungeonId = canJoinNextDungeon and (DifficultyID == 5 or InTower or InInfiniteTower) and nextDungeonId or DungeonID
-                local joiningDifficultyId = canJoinNextDungeon and (isTowerNext and nil or oppositeDifficulty[DifficultyID]) or DifficultyID
+                local joiningNextDungeon = Profile.Level.Value >= missionLevelReq(nextDungeonId) and (DifficultyID == 5 or InTower or InInfiniteTower) and true or false
+                local joiningDungeonId = joiningNextDungeon and nextDungeonId or DungeonID
+                local joiningDifficultyId = joiningNextDungeon and (isTowerNext and 'tower' or oppositeDifficulty[DifficultyID]) or DifficultyID == 1 and 5 or DifficultyID
+                if joiningDifficultyId == 'tower' then joiningDifficultyId = nil end
                 StartRaid(joiningDungeonId, joiningDifficultyId)
             elseif Toggles.RestartDungeon.Value and Toggles.Autofarm.Value then
                 game:GetService("ReplicatedStorage").Shared.Missions.LeaveChoice:FireServer(true)
