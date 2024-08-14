@@ -5,6 +5,8 @@ if not game:IsLoaded() then
     game.Loaded:Wait()
 end
 
+
+print('Secret Infinite World Zero Script v12')
 local devMode = true
 
 local Players = game:GetService('Players')
