@@ -4,7 +4,7 @@ end
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
-print('Infinite Private World Zero v21')
+print('Infinite Private World Zero v22')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -580,7 +580,7 @@ local specialTargetingDungeons = {
     KonoHeartlands = { Id = 24, ignoreMob = 'CorruptedGreaterTree' },
     AetherFortress = { Id = 33, ignoreMob = 'BOSSTreeEnt' },
     MamaTrauma = { Id = 12, ignoreMob = 'BOSSMamaQuillodile' },
-    TheUnderworld = { Id = 26, ignoreMob = 'HadesCerberus' },
+    TheUnderworld = { Id = 26, ignoreMob = 'HadesCerberus', mobWaitTbl = {'HadesCerberus'}, mobWaitTime = 1 },
     VaneEvent = { Id = 44, priorityTbl = {'EVENTBOSSVane'} },
     ArcaneTower = { Id = 43, priorityTbl = {'Crystal','BOSSKandrix'} },
     RescueInTheRuins = { Id = 30, priorityTbl = {'Alligator','Rapigator','Sentry','HandTower'} },
@@ -2404,23 +2404,26 @@ do
 
 
         local function missionEndRestartOrNextEvent()
-            if Toggles.nightmareLoop.Value and Toggles.Autofarm.Value and table.find(Nightmares, DungeonID) then
-                local nextNightmareId = Nightmares[table.find(Nightmares, DungeonID)+1]
-                if nextNightmareId then StartRaid(nextNightmareId, DifficultyID) else StartRaid(1005, DifficultyID) end
-            elseif Toggles.NextDungeon.Value and Toggles.Autofarm.Value and DungeonID ~= 38 then
-                local nextDungeonId = nextDungeonTbl[table.find(nextDungeonTbl, DungeonID)+1]
-                local isTowerNext = table.find(Towers2, nextDungeonId)
-                local joiningNextDungeon = Profile.Level.Value >= missionLevelReq(nextDungeonId) and (DifficultyID == 5 or InTower or InInfiniteTower) and true or false
-                local joiningDungeonId = joiningNextDungeon and nextDungeonId or DungeonID
-                local joiningDifficultyId = joiningNextDungeon and (isTowerNext and 'tower' or oppositeDifficulty[DifficultyID]) or DifficultyID == 1 and 5 or DifficultyID
-                if joiningDifficultyId == 'tower' then joiningDifficultyId = nil end
-                StartRaid(joiningDungeonId, joiningDifficultyId)
-            elseif Toggles.RestartDungeon.Value and Toggles.Autofarm.Value then
-                game:GetService("ReplicatedStorage").Shared.Missions.LeaveChoice:FireServer(true)
-                game:GetService("ReplicatedStorage").Shared.Missions.NotifyReadyToLeave:FireServer()
-                StartRaid(DungeonID, DifficultyID)
+            if Toggles.Autofarm.Value then
+                if Toggles.nightmareLoop.Value and table.find(Nightmares, DungeonID) then
+                    local nextNightmareId = Nightmares[table.find(Nightmares, DungeonID)+1]
+                    if nextNightmareId then StartRaid(nextNightmareId, DifficultyID) else StartRaid(1005, DifficultyID) end
+                elseif Toggles.NextDungeon.Value and DungeonID ~= 38 then -- won't go to next dungeon in infinite tower because it is the last dungeon in the list
+                    local nextDungeonId = nextDungeonTbl[table.find(nextDungeonTbl, DungeonID)+1]
+                    local isTowerNext = table.find(Towers2, nextDungeonId)
+                    local joiningNextDungeon = Profile.Level.Value >= missionLevelReq(nextDungeonId) and (DifficultyID == 5 or InTower or InInfiniteTower) and true or false
+                    local joiningDungeonId = joiningNextDungeon and nextDungeonId or DungeonID
+                    local joiningDifficultyId = joiningNextDungeon and (isTowerNext and 'tower' or oppositeDifficulty[DifficultyID]) or DifficultyID == 1 and 5 or DifficultyID
+                    if joiningDifficultyId == 'tower' then joiningDifficultyId = nil end
+                    StartRaid(joiningDungeonId, joiningDifficultyId)
+                elseif Toggles.RestartDungeon.Value then
+                    game:GetService("ReplicatedStorage").Shared.Missions.LeaveChoice:FireServer(true)
+                    game:GetService("ReplicatedStorage").Shared.Missions.NotifyReadyToLeave:FireServer()
+                    StartRaid(DungeonID, DifficultyID)
+                end
             end
         end
+
 
         local function openEndChests()
             if Toggles.Autofarm.Value then GetMissionChest:InvokeServer(); GetMissionChest:InvokeServer() end
