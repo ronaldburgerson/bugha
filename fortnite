@@ -4,7 +4,7 @@ end
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
-print('Infinite Private World Zero v23')
+print('Infinite Private World Zero v24')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -3147,7 +3147,7 @@ Toggles.Killaura:OnChanged(function()
             while Toggles.Killaura.Value do
                 for i,v in pairs(MissionObjects:GetChildren()) do
                     local child = v:FindFirstChild("HealthProperties", true)
-                    if child and not table.find(ignoreObjects, child.Parent.Name) then print('Moved ' .. child.Parent.Name); child.Parent.Parent = Mobs end
+                    if child and not table.find(ignoreObjects, child.Parent.Name) then child.Parent.Parent = Mobs end
                 end 
                 task.wait(0.1)
             end 
