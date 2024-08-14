@@ -1810,7 +1810,7 @@ do
     local goldRateTick
     local goldRateGold
     local startGoldTimer = false
-    local totalGoldText = StatsTab:AddLabel('Total Gold: ' .. Gold.Value)
+    local totalGoldText = StatsTab:AddLabel('Total Gold: ' .. formatNumberWithCommas(Gold.Value))
     local goldTimeElapsedText = StatsTab:AddLabel('Time Elapsed: 0h 0m 0s')
     local function timeElapsed(v)
         local h = math.floor(v / 3600)
@@ -1831,8 +1831,8 @@ do
                     goldRateTick = tick()
                     goldRateGold = NewGold
                 end
-                goldGainedText:SetText('Gold Gained: ' .. NewGold-OldGold)
-                totalGoldText:SetText('Total Gold: ' .. NewGold)
+                goldGainedText:SetText('Gold Gained: ' .. formatNumberWithCommas(NewGold-OldGold))
+                totalGoldText:SetText('Total Gold: ' .. formatNumberWithCommas(NewGold))
             end
             task.wait()
         end
