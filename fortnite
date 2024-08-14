@@ -4,8 +4,8 @@ end
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
-print('Infinite Private World Zero v19')
-local devMode = false
+print('Infinite Private World Zero v20')
+local devMode = true
 
 local Players = game:GetService('Players')
 local LocalPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal('LocalPlayer'):Wait() or Players.LocalPlayer
@@ -2017,7 +2017,7 @@ do
                     while newBestMob and newBestMob:FindFirstChild("HealthProperties") and newBestMob.HealthProperties:FindFirstChild("Health") 
                     and newBestMob.HealthProperties.Health.Value > 0 and Toggles.Autofarm.Value and newBestMob.PrimaryPart and TeleportingToMob do
                         local newRoot = newBestMob.PrimaryPart
-                        bestMob = v
+                        bestMob = newBestMob
                         if mobWaitTbl and table.find(mobWaitTbl, mobName) and not waited then task.wait(waittime); waited = true end
                         if Healing then resetCamera() else setMobCamera(Toggles.mobCamera.Value, newRoot) end
                         local yOffset = (newRoot.Size.Y/2 + (Options.Offset.Value)) * (ClassData[Class].Type == 'Ranged' and 1 or -1)
