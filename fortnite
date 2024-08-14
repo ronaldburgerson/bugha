@@ -4,7 +4,7 @@ end
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
-print('Infinite Private World Zero v24')
+print('Infinite Private World Zero v25')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -607,7 +607,8 @@ local WorldData = {
     --HalloweenHub = { Name = 'Spooky Courtyard', Id = 33, OrderId = 15},
     --DragonTown = { Name = 'Dragon Town', Id = 65, OrderId = 14 },
 }
-local nextDungeonTbl = {1,3,2,4,6,11,12,13,7,14,15,16,20,19,18,24,35,21,25,36,23,26,37,27,30,31,29,32,33,34,41,42,43,1005,1006,1007,39,38}
+-- Removed Gravetower dungeon because demon insta kills it, Id is 6
+local nextDungeonTbl = {1,3,2,4,11,12,13,7,14,15,16,20,19,18,24,35,21,25,36,23,26,37,27,30,31,29,32,33,34,41,42,43,1005,1006,1007,39,38}
 local DungeonData = {
     --World 1--
     { Id = 1, Name = "Crabby Crusade", World = 1, Code = '1-1' },
