@@ -4,7 +4,7 @@ end
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
-print('Infinite Private World Zero v22')
+print('Infinite Private World Zero v23')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -599,7 +599,7 @@ local WorldData = {
     World7 = { Name = 'World 7', Id = 40, OrderId = 7 },
     World8 = { Name = 'World 8', Id = 45, OrderId = 8 },
     World9 = { Name = 'World 9', Id = 49, OrderId = 9 },
-    World10 = { Name = 'World 10', Id = 56, OrderId = 10},
+    World10 = { Name = 'World 10', Id = 56, OrderId = 10 },
     TradingHub = { Name = 'Cliffside Marketplace', Id = 44, OrderId = 11 },
     PvpArena = { Name = 'Pvp Arena', Id = 39, OrderId = 12 },
     Baseplate = { Name = 'Baseplate', Id = 26, OrderId = 13 },
@@ -607,7 +607,7 @@ local WorldData = {
     --HalloweenHub = { Name = 'Spooky Courtyard', Id = 33, OrderId = 15},
     --DragonTown = { Name = 'Dragon Town', Id = 65, OrderId = 14 },
 }
-local nextDungeonTbl = {1,3,2,4,6,11,12,13,7,14,15,16,20,19,18,24,35,21,25,36,23,26,37,27,30,31,29,32,33,34,41,42,43,39,1005,1006,1007,38}
+local nextDungeonTbl = {1,3,2,4,6,11,12,13,7,14,15,16,20,19,18,24,35,21,25,36,23,26,37,27,30,31,29,32,33,34,41,42,43,1005,1006,1007,39,38}
 local DungeonData = {
     --World 1--
     { Id = 1, Name = "Crabby Crusade", World = 1, Code = '1-1' },
@@ -1931,7 +1931,7 @@ do
                     end
                 end
                 bestMob = nil
-                if InInfiniteTower and TeleportingToMob then SmartPlayerTp(CFrame.new(10000,10000,10000)) end
+                if InInfiniteTower and TeleportingToMob and not (ReplicatedStorage.ReplicateTowerFloor.Value == 100) then SmartPlayerTp(CFrame.new(10000,10000,10000)) end
                 resetCamera()
                 unnoclip()
                 task.wait()
@@ -2499,18 +2499,18 @@ do
                     end
                 end
             end)
-            openEndChests()
+            pcall(function() openEndChests() end)
             task.wait(failed and 2 or 3 + Options.dungeonRestartTimer.Value)
             missionEndRestartOrNextEvent()
         end)
 
         -- Tower Finished Function - Tower Fail is handled with MissionFinished above
-        if InTower then MissionScripts[DungeonID].TowerFinished.OnClientEvent:Once(function(unknown, completionTime)
+        if InTower or DungeonID == 39 then MissionScripts[DungeonID].TowerFinished.OnClientEvent:Once(function(unknown, completionTime)
             dungeonEndTime = tick()
             DungeonCompleted = true
             dungeonEndGold = Gold.Value
             task.spawn(function() msg("Completed", colorTbl.Green, completionTime) end)
-            openEndChests()
+            pcall(function() openEndChests() end)
             while true do
                 if finalChestsAppeared and finalItemHandled and tick()-finalItemHandledTime >= 2 and tick()-lastChestAppeared >= 2 
                 or finalChestsAppeared and tick()-lastChestAppeared >= 15 then break end task.wait()
@@ -2535,7 +2535,8 @@ do
                         end
                     end)
                 end
-                if (ownsDoubleDrop or DungeonCompleted) and c.Name == ChestName2 then
+                local canOpenOtherChests = DungeonCompleted and not InInfiniteTower and true or false
+                if (ownsDoubleDrop or canOpenOtherChests) and c.Name == ChestName2 then
                     lastChestAppeared = tick()
                     if DungeonCompleted then finalChestsAppeared = true; finalItemHandled = false end
                     task.spawn(function()
