@@ -4,7 +4,7 @@ end
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
-print('Infinite Private World Zero v15')
+print('Infinite Private World Zero v18')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -450,8 +450,9 @@ function StartRaid(v1,v2)
     Shared:WaitForChild('Teleport'):WaitForChild('StartRaid'):FireServer(v1, v2)
 end
 local tier = require(Shared.Inventory)
-Class1:GetPropertyChangedSignal("Value"):Connect(function()
-    Class = Class1.Value
+Class1:GetPropertyChangedSignal("Value"):Connect(function(val)
+    print('Class Changed! New Class: ' .. val)
+    Class = val
 end)
 local dungeonStartTime = 0
 local dungeonEndTime = 0
@@ -2078,11 +2079,8 @@ do
             task.spawn(function()
                 PausePos = nil
                 while Toggles.Autofarm.Value and not AtlantisBossCheck do
-                    if mobPos then
-                        PausePos = mobPos
-                    end
-                    if PausePos and MobCount and MobCount == 0 and HealthProperties and HealthProperties:FindFirstChild('Health') and HealthProperties.Health.Value > 0 and
-                    HumanoidRootPart then
+                    if bestMob and bestMob.PrimaryPart and bestMob.PrimaryPart.Position then PausePos = bestMob.PrimaryPart.Position end
+                    if PausePos and MobCount == 0 then
                         local newTick = tick()
                         while tick()-newTick <= 0.1 and MobCount == 0 do
                             SmartPlayerTp(CFrame.new(PausePos + Vector3.new(0,5,0)))
@@ -2090,7 +2088,7 @@ do
                         end
                         PausePos = nil
                     end
-                    Heartbeat:Wait()
+                    task.wait()
                 end
                 if not Toggles.Autofarm.Value and not AtlantisBossCheck then
                     if PausePos then
@@ -3067,48 +3065,53 @@ Toggles.Killaura:OnChanged(function()
     -- LifeSteal Loop for demon
     if InMission then
         if Class == 'Demon' then
+            local specialMode
             for i2,v2 in pairs(specialTargetingDungeons) do
                 if DungeonID == v2.Id and v2.ignoreMob then
                     local waited
-                    while Toggles.Killaura.Value do
-                        for _, Mob in pairs(Mobs:GetChildren()) do
-                            if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties:FindFirstChild('Health') and Mob.HealthProperties.Health.Value > 0 then
-                                if not (Mob.Name == v2.ignoreMob) then
-                                    lastAttackTime = tick()
-                                    for i = 1, Options.LifeStealInterval.Value do
-                                        LifeSteal:FireServer(table.create(3, Mob))
-                                    end
-                                end
-                                if Mob.Name == v2.ignoreMob and MobCount and MobCount == 1 then
-                                    if v2.mobWaitTime and not waited then task.wait(v2.mobWaitTime); waited = true end
-                                    if MobCount == 1 then
-                                        lastAttackTime = tick() 
+                    specialMode = true
+                    task.spawn(function()
+                        while Toggles.Killaura.Value do
+                            for _, Mob in pairs(Mobs:GetChildren()) do
+                                if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties:FindFirstChild('Health') and Mob.HealthProperties.Health.Value > 0 then
+                                    if not (Mob.Name == v2.ignoreMob) then
+                                        lastAttackTime = tick()
                                         for i = 1, Options.LifeStealInterval.Value do
                                             LifeSteal:FireServer(table.create(3, Mob))
                                         end
                                     end
+                                    if Mob.Name == v2.ignoreMob and MobCount and MobCount == 1 then
+                                        if v2.mobWaitTime and not waited then task.wait(v2.mobWaitTime); waited = true end
+                                        if MobCount == 1 then
+                                            lastAttackTime = tick() 
+                                            for i = 1, Options.LifeStealInterval.Value do
+                                                LifeSteal:FireServer(table.create(3, Mob))
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                            task.wait(Options.KillauraDelay.Value)
+                        end
+                    end)
+                end
+            end
+            if not specialMode then
+                task.spawn(function()
+                    while Toggles.Killaura.Value do
+                        for _, Mob in pairs(Mobs:GetChildren()) do
+                            if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties:FindFirstChild('Health') and Mob.HealthProperties.Health.Value > 0 
+                            and (AtlantisBossCheck and Mob:FindFirstChild('MobProperties') and Mob.MobProperties:FindFirstChild('CurrentAttack') and table.find(vulnerableTentacleAttacks, Mob.MobProperties.CurrentAttack.Value) or not AtlantisBossCheck)  then
+                                lastAttackTime = tick()
+                                for i = 1, Options.LifeStealInterval.Value do
+                                    LifeSteal:FireServer(table.create(3, Mob))
                                 end
                             end
                         end
                         task.wait(Options.KillauraDelay.Value)
                     end
-                end
+                end)
             end
-
-            task.spawn(function()
-                while Toggles.Killaura.Value do
-                    for _, Mob in pairs(Mobs:GetChildren()) do
-                        if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties:FindFirstChild('Health') and Mob.HealthProperties.Health.Value > 0 
-                        and (AtlantisBossCheck and Mob:FindFirstChild('MobProperties') and Mob.MobProperties:FindFirstChild('CurrentAttack') and table.find(vulnerableTentacleAttacks, Mob.MobProperties.CurrentAttack.Value) or not AtlantisBossCheck)  then
-                            lastAttackTime = tick()
-                            for i = 1, Options.LifeStealInterval.Value do
-                                LifeSteal:FireServer(table.create(3, Mob))
-                            end
-                        end
-                    end
-                    task.wait(Options.KillauraDelay.Value)
-                end
-            end)
         end
     end
 
@@ -3145,7 +3148,8 @@ Toggles.Killaura:OnChanged(function()
 
     -- PerkSwitcher and Auto Equip Selected Mob/Boss, also has the getclosestmob when using mageofshadow or demon because the main killaura loop doesnt run with those classes
     task.spawn(function()
-        while Toggles.Killaura.Value do if table.find(bestClasses, Class) then mobRoot, attackPos, mobPos, dist, originDist, isBoss, mobHp = getClosestMob(bestMob) end
+        while Toggles.Killaura.Value do 
+            if table.find(bestClasses, Class) then mobRoot, attackPos, mobPos, dist, originDist, isBoss, mobHp = getClosestMob(bestMob) end
             if Toggles.PerkSwitcher.Value and mobRoot then
                 local OffhandPerksOn = OffhandPerksActive()
                 local OffhandPerkValue = nil
@@ -3237,7 +3241,8 @@ Toggles.Killaura:OnChanged(function()
     -- Main Killaura
     task.spawn(function()
         -- BestMob is the mob autofarm is teleporting to currently, else its nil and killaura will just get the closest mob
-        while Toggles.Killaura.Value do mobRoot, attackPos, mobPos, dist, originDist, isBoss, mobHp = getClosestMob(bestMob) 
+        while Toggles.Killaura.Value do
+            mobRoot, attackPos, mobPos, dist, originDist, isBoss, mobHp = getClosestMob(bestMob) 
             if mobRoot and Character and Character:FindFirstChild('Properties') and not (Character.Properties:GetAttribute('Mounted')) 
             and HealthProperties and HealthProperties:FindFirstChild('Health') and HealthProperties.Health.Value > 0 then
                 for _, SkillData in pairs(ClassData[Class].Skills) do
