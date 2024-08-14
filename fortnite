@@ -1317,15 +1317,6 @@ do
         Compact = true,
     })
 
-    --[[Farming:AddSlider('LifeStealInterval', {
-        Text = 'Life Steal Repeats',
-        Default = 1,
-        Min = 1,
-        Max = 10,
-        Rounding = 0,
-        HideMax = true,
-    })]]
-
     Farming:AddToggle('Autofarm', {
         Text = 'Autofarm',
         Default = false, -- Default value (true / false)
@@ -3111,8 +3102,7 @@ Toggles.Killaura:OnChanged(function()
                 while Toggles.Killaura.Value do
                     for _, Mob in pairs(Mobs:GetChildren()) do
                         if Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties:FindFirstChild('Health') and Mob.HealthProperties.Health.Value > 0 
-                        and Mob:FindFirstChild('MobProperties') and Mob.MobProperties:FindFirstChild('CurrentAttack')
-                        and (AtlantisBossCheck and table.find(vulnerableTentacleAttacks, Mob.MobProperties.CurrentAttack.Value) or not AtlantisBossCheck)  then
+                        and (AtlantisBossCheck and Mob:FindFirstChild('MobProperties') and Mob.MobProperties:FindFirstChild('CurrentAttack') and table.find(vulnerableTentacleAttacks, Mob.MobProperties.CurrentAttack.Value) or not AtlantisBossCheck)  then
                             lastAttackTime = tick()
                             for i = 1, Options.LifeStealInterval.Value do
                                 LifeSteal:FireServer(table.create(3, Mob))
