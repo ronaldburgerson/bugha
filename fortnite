@@ -4,6 +4,9 @@ end
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
+if InfiniteHub then return end
+getgenv().InfiniteHub = true
+
 print('Infinite Private World Zero v26')
 local devMode = true
 
