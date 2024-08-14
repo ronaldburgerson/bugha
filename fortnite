@@ -5,8 +5,6 @@ if not game:IsLoaded() then
     game.Loaded:Wait()
 end
 
-
-print('Secret Infinite World Zero Script v12')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -306,6 +304,7 @@ local InAtlantis = false
 local InTower = false
 local InInfiniteTower = false
 local DungeonCompleted
+local bestClasses = {'Demon', 'MageOfShadows'}
 local requestDone
 local OldPosition
 local TempCheck = false
@@ -3065,10 +3064,6 @@ Toggles.Killaura:OnChanged(function()
     local LifeSteal = Skillsets.Demon.LifeSteal
     lastAttackTime = tick()
 
-    task.spawn(function()
-        while Toggles.Killaura.Value do mobRoot, attackPos, mobPos, dist, originDist, isBoss, mobHp = getClosestMob(bestMob); task.wait() end
-    end)
-
     -- LifeSteal Loop for demon
     if InMission then
         if Class == 'Demon' then
@@ -3147,18 +3142,10 @@ Toggles.Killaura:OnChanged(function()
         end)
     end
 
-    if true then
-        return
-    end
 
-
-
-
-
-
-    -- PerkSwitcher and Auto Equip Selected Mob/Boss Weapons
+    -- PerkSwitcher and Auto Equip Selected Mob/Boss, also has the getclosestmob when using mageofshadow or demon because the main killaura loop doesnt run with those classes
     task.spawn(function()
-        while Toggles.Killaura.Value do
+        while Toggles.Killaura.Value do if table.find(bestClasses, Class) then mobRoot, attackPos, mobPos, dist, originDist, isBoss, mobHp = getClosestMob(bestMob) end
             if Toggles.PerkSwitcher.Value and mobRoot then
                 local OffhandPerksOn = OffhandPerksActive()
                 local OffhandPerkValue = nil
@@ -3204,6 +3191,12 @@ Toggles.Killaura:OnChanged(function()
             task.wait()
         end
     end)
+
+
+    if table.find(bestClasses, Class) then
+        return
+    end
+
 
     -- Main Killaura
     task.spawn(function()
