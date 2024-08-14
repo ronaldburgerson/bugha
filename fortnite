@@ -7,7 +7,7 @@ end
 if InfiniteHub then return end
 getgenv().InfiniteHub = true
 
-print('Infinite Private World Zero v26')
+print('Infinite Private World Zero v27')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -843,7 +843,7 @@ local ClassData = {
     Demon = {
         DisplayName = 'Demon',
         Range = 10,
-        Type = 'Melee',
+        Type = 'Ranged',
         Primary = 'Scythe',
         Skills = {
             { Skill = 'Demon1', Cooldown = 0.85 },
