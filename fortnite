@@ -7,7 +7,7 @@ end
 if InfiniteHub then return end
 getgenv().InfiniteHub = true
 
-print('Infinite Private World Zero v29')
+print('Infinite Private World Zero v30')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -241,6 +241,7 @@ local InfiniteWorldZeroData = {
     RejoinLastDungeonThreshold = 1800,
     Gold = false,
     LastDungeonCompletion = false,
+    CrossSessionTimestamp = false,
 }
 
 local KickFilename = LocalPlayer.UserId ..  '_InfiniteWorldZeroData.txt'
@@ -1818,12 +1819,26 @@ do
     local goldRateGold
     local startGoldTimer = false
     local totalGoldText = StatsTab:AddLabel('Total Gold: ' .. formatNumberWithCommas(Gold.Value))
-    local goldTimeElapsedText = StatsTab:AddLabel('Time Elapsed: 0h 0m 0s')
+    local goldTimeElapsedText = StatsTab:AddLabel('Session Time: 0s')
+    local crossSessionTimeText = StatsTab:AddLabel('Cross-Session Time: 0s')
+    local crossSessionTimeTick = InfiniteWorldZeroData.CrossSessionTimestamp or tick()
+    StatsTab:AddButton({
+        Text = 'Reset Cross-Session Time',
+        Func = function()
+            crossSessionTimeTick = tick(); InfiniteWorldZeroData.CrossSessionTimestamp = crossSessionTimeTick; save()
+        end,
+        DoubleClick = true,
+    })
+
+    if not InfiniteWorldZeroData.CrossSessionTimestamp then InfiniteWorldZeroData.CrossSessionTimestamp = crossSessionTimeTick; save() end
+
     local function timeElapsed(v)
         local h = math.floor(v / 3600)
         local m = math.floor((v % 3600) / 60)
         local s = math.floor((v % 60))
-        return (h .. 'h ' .. m .. 'm ' .. s .. 's')
+        if h > 0 then return h .. 'h ' .. m .. 'm ' .. s .. 's' end
+        if m > 0 and h == 0 then return m .. 'm ' .. s .. 's' end
+        if h == 0 and m == 0 then return s .. 's' end
     end
     task.spawn(function()
         while true do
@@ -1848,6 +1863,7 @@ do
         while true do
             task.wait(1)
             goldTimeElapsedText:SetText('Session Time: ' .. timeElapsed(tick()-sessionTick))
+            crossSessionTimeText:SetText('Cross-Session Time: ' .. timeElapsed(tick()-crossSessionTimeTick))
         end
     end)
 end
