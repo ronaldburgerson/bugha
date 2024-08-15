@@ -7,7 +7,7 @@ end
 if InfiniteHub then return end
 getgenv().InfiniteHub = true
 
-print('Infinite Private World Zero v31')
+print('Infinite Private World Zero v32')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -1807,6 +1807,15 @@ end
 
 -- Stats Tab
 do
+    local function timeElapsed(v)
+        local h = math.floor(v / 3600)
+        local m = math.floor((v % 3600) / 60)
+        local s = math.floor((v % 60))
+        if h > 0 then return h .. 'h ' .. m .. 'm ' .. s .. 's' end
+        if m > 0 and h == 0 then return m .. 'm ' .. s .. 's' end
+        if h == 0 and m == 0 then return s .. 's' end
+    end
+
     local goldGainedText = StatsTab:AddLabel('Gold Gain: ' .. Gold.Value-OldGold)
     local goldRateText = StatsTab:AddLabel('Gold Rate: N/A')
     local firstTime = true
@@ -1817,8 +1826,8 @@ do
     local totalGoldText = StatsTab:AddLabel('Total Gold: ' .. formatNumberWithCommas(Gold.Value))
     local goldTimeElapsedText = StatsTab:AddLabel('Session Time: 0s')
     StatsTab:AddDivider()
-    local crossSessionTimeText = StatsTab:AddLabel('Cross-Session Time: 0s')
     local crossSessionTimeTick = InfiniteWorldZeroData.CrossSessionTimestamp or tick()
+    local crossSessionTimeText = StatsTab:AddLabel('Cross-Session Time: ' .. timeElapsed(tick()-crossSessionTimeTick))
     local crossSessionGoldGainText = StatsTab:AddLabel('CS Gold Gain: ' .. (InfiniteWorldZeroData.CrossSessionGold and NewGold-InfiniteWorldZeroData.CrossSessionGold or 0))
     local crossSessionOldGold = InfiniteWorldZeroData.CrossSessionGold or NewGold
     StatsTab:AddButton({
@@ -1841,14 +1850,6 @@ do
     if not InfiniteWorldZeroData.CrossSessionGold then InfiniteWorldZeroData.CrossSessionGold = crossSessionOldGold; saving = true end
     if saving then save() end
 
-    local function timeElapsed(v)
-        local h = math.floor(v / 3600)
-        local m = math.floor((v % 3600) / 60)
-        local s = math.floor((v % 60))
-        if h > 0 then return h .. 'h ' .. m .. 'm ' .. s .. 's' end
-        if m > 0 and h == 0 then return m .. 'm ' .. s .. 's' end
-        if h == 0 and m == 0 then return s .. 's' end
-    end
     task.spawn(function()
         while true do
             if Gold.Value ~= NewGold then
