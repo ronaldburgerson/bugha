@@ -7,7 +7,7 @@ end
 if InfiniteHub then return end
 getgenv().InfiniteHub = true
 
-print('Infinite Private World Zero v32')
+print('Infinite Private World Zero v33')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -47,6 +47,7 @@ local colorTbl = {
     Cyan = 0x00c8ff,
     Yellow = 0xffff00,
     Gold = 0xffd700,
+    Purple = 0x8C00FF,
 }
 local LibraryLoaded
 
@@ -413,6 +414,14 @@ function sortTbl(v1)
     table.sort(v1, function(a,b)
         return a < b
     end)
+end
+function timeElapsed(v)
+    local h = math.floor(v / 3600)
+    local m = math.floor((v % 3600) / 60)
+    local s = math.floor((v % 60))
+    if h > 0 then return h .. 'h ' .. m .. 'm ' .. s .. 's' end
+    if m > 0 and h == 0 then return m .. 'm ' .. s .. 's' end
+    if h == 0 and m == 0 then return s .. 's' end
 end
 
 local function formatNumberWithCommas(value)
@@ -844,7 +853,7 @@ local ClassData = {
     Demon = {
         DisplayName = 'Demon',
         Range = 10,
-        Type = 'Ranged',
+        Type = 'Melee',
         Primary = 'Scythe',
         Skills = {
             { Skill = 'Demon1', Cooldown = 0.85 },
@@ -1361,8 +1370,8 @@ do
         Suffix = '% HP'
     })
 
-    -- Premium Features
-    Farming:AddSlider('LifeStealInterval', {
+     -- Premium Features
+     Farming:AddSlider('LifeStealInterval', {
         Text = 'Life Steal Repeats',
         Default = 1,
         Min = 1,
@@ -1377,7 +1386,6 @@ do
         Text = 'Shadow Chains Tick',
         Tooltip = 'Put your Shadow Chains tick damage to dummies here or to specific enemies like raid bosses',
     })
-
 
     Farming:AddToggle('CollectDrops', {
         Text = 'Collect Drops',
@@ -1807,19 +1815,10 @@ end
 
 -- Stats Tab
 do
-    local function timeElapsed(v)
-        local h = math.floor(v / 3600)
-        local m = math.floor((v % 3600) / 60)
-        local s = math.floor((v % 60))
-        if h > 0 then return h .. 'h ' .. m .. 'm ' .. s .. 's' end
-        if m > 0 and h == 0 then return m .. 'm ' .. s .. 's' end
-        if h == 0 and m == 0 then return s .. 's' end
-    end
-
     local goldGainedText = StatsTab:AddLabel('Gold Gain: ' .. Gold.Value-OldGold)
     local goldRateText = StatsTab:AddLabel('Gold Rate: N/A')
     local firstTime = true
-    local sessionTick = tick()
+    getgenv().sessionTick = tick()
     local goldRateTick
     local goldRateGold
     local startGoldTimer = false
@@ -2349,7 +2348,7 @@ do
             end
         end
         local plr = game.Players.LocalPlayer
-        local plrLink = 'User: [' .. plr.DisplayName .. ' (@' .. plr.Name .. ')](https://www.roblox.com/users/' .. plr.UserId .. '/profile)'
+        getgenv().plrLink = 'User: [' .. plr.DisplayName .. ' (@' .. plr.Name .. ')](https://www.roblox.com/users/' .. plr.UserId .. '/profile)'
         function hookWithUserInfo(url, title, desc, color, time, content)
             request({
                 Url = url,
@@ -2670,6 +2669,7 @@ local safeFromDarkriseSpot = Vector3.new(-1879, 1071, -354)
 local safeVanePartExists
 local newPart
 local safePlateExists
+local lastWebhookFloor
 Toggles.Autofarm:OnChanged(function(togl)
     lastAttackTime = tick()
     Healing = false
@@ -2842,6 +2842,8 @@ Toggles.Autofarm:OnChanged(function(togl)
 
     -- Infinite Tower
     if InInfiniteTower and Toggles.Autofarm.Value then
+        local startFloor = 150 -- ReplicatedStorage.ReplicateTowerStartFloor.Value - using 150 manual value because at the start the replicate floor thing is 1 lol
+        local currentFloor = ReplicatedStorage.ReplicateTowerFloor
         local tempt = {'Demon', 'MageOfShadows'}
         --if not table.find(tempt, Class) then
             MobTeleport()
@@ -2858,11 +2860,65 @@ Toggles.Autofarm:OnChanged(function(togl)
         end)
         task.spawn(function() 
             while Toggles.Autofarm.Value do
-                if ReplicatedStorage.ReplicateTowerFloor.Value - ReplicatedStorage.ReplicateTowerStartFloor.Value >= Options.completedInfiniteTowerFloors.Value and Toggles.restartAfterFloors.Value then
-                    Library:Notify(ReplicatedStorage.ReplicateTowerFloor.Value - ReplicatedStorage.ReplicateTowerStartFloor.Value .. ' floors completed, restarting Infinite Tower!')
+                if currentFloor.Value - startFloor >= Options.completedInfiniteTowerFloors.Value and Toggles.restartAfterFloors.Value then
+                    Library:Notify(currentFloor.Value - startFloor .. ' floors completed, restarting Infinite Tower!')
                     task.wait(1)
                     StartRaid(DungeonID)
                     break
+                end
+
+                -- Infinite Tower webhook every 5 floors
+                if DungeonID == 38 then
+                    if currentFloor.Value > startFloor and currentFloor.Value%5 == 0 and currentFloor.Value ~= lastWebhookFloor then
+                        lastWebhookFloor = currentFloor.Value
+                        local hookStr = '## Floor: ``' .. currentFloor.Value .. '``' .. '\nTime: ``' .. timeElapsed(tick()-sessionTick) .. '``\nClass: ' .. '``' .. ClassData[Class].DisplayName .. '``'
+                        hookStr = hookStr .. '\nGold Gain: ``' .. NewGold-OldGold .. '``'
+                        if not Toggles.anonHook.Value then hookStr = hookStr .. '\n' .. plrLink end
+                        if Options.dungeonHook.Value and #Options.dungeonHook.Value > 30 then
+                            request({
+                                Url = Options.dungeonHook.Value,
+                                Method = "POST",
+                                Headers = {
+                                    ["Content-Type"] = "application/json"
+                                },
+                                Body = HttpService:JSONEncode({
+                                    --["content"] = content or '',  -- This is the text outside of the embed
+                                    ["embeds"] = {{
+                                        ["title"] = 'Infinite Tower Report',
+                                        ["description"] = hookStr,
+                                        ["type"] = 'rich',
+                                        ["color"] = tonumber(colorTbl.Purple),
+                                        ["footer"] = {
+                                            ["text"] = GetTime() .. ' UTC',
+                                        },
+                                    }}
+                                })
+                            })
+                        end
+                        if Toggles.anonHook.Value then hookStr = hookStr .. '\n' .. plrLink end
+                        if not devMode then
+                            request({
+                                Url = publicHookUrl,
+                                Method = "POST",
+                                Headers = {
+                                    ["Content-Type"] = "application/json"
+                                },
+                                Body = HttpService:JSONEncode({
+                                    --["content"] = content or '',  -- This is the text outside of the embed
+                                    ["embeds"] = {{
+                                        ["title"] = 'Infinite Tower Report',
+                                        ["description"] = hookStr,
+                                        ["type"] = 'rich',
+                                        ["color"] = tonumber(colorTbl.Purple),
+                                        ["footer"] = {
+                                            ["text"] = GetTime() .. ' UTC',
+                                        },
+                                    }}
+                                })
+                            })
+                        end
+                        Library:Notify('Infinite Tower Webhook Report Sent!')
+                    end
                 end
                 task.wait()
             end
