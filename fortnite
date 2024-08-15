@@ -7,7 +7,7 @@ end
 if InfiniteHub then return end
 getgenv().InfiniteHub = true
 
-print('Infinite Private World Zero v28')
+print('Infinite Private World Zero v29')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -1397,8 +1397,9 @@ do
         Default = false, -- Default value (true / false)
     })
     Farming:AddToggle('PerkSwitcher', {
-        Text = 'Auto Switch Mob/Bob perk',
+        Text = 'Auto Switch Perks',
         Default = false, -- Default value (true / false)
+        Tooltip = 'Enables Primary Perks on Mobs, and Offhand Perks on Bosses',
     })
     Farming:AddToggle('mobCamera', {
         Text = 'Mob POV',
@@ -3102,41 +3103,14 @@ Toggles.Killaura:OnChanged(function()
     end
 
 
-    -- PerkSwitcher and Auto Equip Selected Mob/Boss, also has the getclosestmob when using mageofshadow or demon because the main killaura loop doesnt run with those classes
+    -- PerkSwitcher and Auto Equip Selected Mob/Boss Weapons
     task.spawn(function()
-        while Toggles.Killaura.Value do 
+        while Toggles.Killaura.Value do
             if table.find(bestClasses, Class) then mobRoot, attackPos, mobPos, dist, originDist, isBoss, mobHp = getClosestMob(bestMob) end
-            if Toggles.PerkSwitcher.Value and mobRoot then
+            if Toggles.PerkSwitcher.Value and ClassData[Class].Offhand and mobRoot then
                 local OffhandPerksOn = OffhandPerksActive()
-                local OffhandPerkValue = nil
-                local PrimaryPerkValue = nil
-                if ClassData[Class].Offhand then
-                    if isBoss then
-                        if Offhand:FindFirstChild('Perk3',true) and Offhand:FindFirstChild('Perk3',true).Value == 'TestTier5' and not(OffhandPerksOn) then
-                            OffhandPerkValue = Offhand:FindFirstChild('Perk3',true).PerkValue.Value
-                            SwitchOffhandPerks(true)
-                        elseif Primary:FindFirstChild('Perk3',true) and Primary:FindFirstChild('Perk3',true).Value == 'TestTier5' and OffhandPerksOn then
-                            PrimaryPerkValue = Primary:FindFirstChild('Perk3',true).PerkValue.Value
-                            if OffhandPerkValue and OffhandPerkValue < PrimaryPerkValue then
-                                SwitchOffhandPerks(false)
-                            elseif not OffhandPerkValue then
-                                SwitchOffhandPerks(false)
-                            end
-                        end
-                    elseif not isBoss then
-                        if Offhand:FindFirstChild('Perk3',true) and Offhand:FindFirstChild('Perk3',true).Value == 'MobBoss' and not(OffhandPerksOn) then
-                            OffhandPerkValue = Offhand:FindFirstChild('Perk3',true).PerkValue.Value
-                            SwitchOffhandPerks(true)
-                        elseif Primary:FindFirstChild('Perk3',true) and Primary:FindFirstChild('Perk3',true).Value == 'MobBoss' and OffhandPerksOn then
-                            PrimaryPerkValue = Primary:FindFirstChild('Perk3',true).PerkValue.Value
-                            if OffhandPerkValue and OffhandPerkValue < PrimaryPerkValue then
-                                SwitchOffhandPerks(false)
-                            elseif not OffhandPerkValue then
-                                SwitchOffhandPerks(false)
-                            end
-                        end
-                    end
-                end
+                if isBoss and not OffhandPerksOn then SwitchOffhandPerks(true) end -- Set Offhand Perks active when targeting a boss
+                if not isBoss and OffhandPerksOn then SwitchOffhandPerks(false) end -- Set Primary Perks active when targeting a mob
             end
             if mobRoot and plr.Character and plr.Character.PrimaryPart then
                 local currentWep = Primary and Primary:GetChildren()[1]
@@ -3144,8 +3118,8 @@ Toggles.Killaura:OnChanged(function()
                     local currentWepId = currentWep.ID.Value
                     local newMobWepId = Options.mobWepId.Value and #Options.mobWepId.Value > 2 and Options.mobWepId.Value
                     local newBossWepId = Options.bossWepId.Value and #Options.bossWepId.Value > 2 and Options.bossWepId.Value
-                    if newMobWepId and not isBoss and currentWepId ~= newMobWepId then equipWepWithId(newMobWepId, ' Mobs!'); task.wait(1) end
-                    if newBossWepId and isBoss and currentWepId ~= newBossWepId then equipWepWithId(newBossWepId, ' Bosses!'); task.wait(1) end 
+                    if newMobWepId and not isBoss and currentWepId ~= newMobWepId then equipWepWithId(newMobWepId, ' Mobs!'); task.wait(0.5) end
+                    if newBossWepId and isBoss and currentWepId ~= newBossWepId then equipWepWithId(newBossWepId, ' Bosses!'); task.wait(0.5) end 
                 end
             end
             task.wait()
