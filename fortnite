@@ -853,7 +853,7 @@ local ClassData = {
     Demon = {
         DisplayName = 'Demon',
         Range = 10,
-        Type = 'Melee',
+        Type = 'Ranged',
         Primary = 'Scythe',
         Skills = {
             { Skill = 'Demon1', Cooldown = 0.85 },
