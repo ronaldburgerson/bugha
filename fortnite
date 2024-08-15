@@ -1828,7 +1828,7 @@ do
     StatsTab:AddDivider()
     local crossSessionTimeTick = InfiniteWorldZeroData.CrossSessionTimestamp or tick()
     local crossSessionTimeText = StatsTab:AddLabel('Cross-Session Time: ' .. timeElapsed(tick()-crossSessionTimeTick))
-    local crossSessionGoldGainText = StatsTab:AddLabel('CS Gold Gain: ' .. (InfiniteWorldZeroData.CrossSessionGold and NewGold-InfiniteWorldZeroData.CrossSessionGold or 0))
+    local crossSessionGoldGainText = StatsTab:AddLabel('CS Gold Gain: ' .. formatNumberWithCommas(InfiniteWorldZeroData.CrossSessionGold and NewGold-InfiniteWorldZeroData.CrossSessionGold or 0))
     local crossSessionOldGold = InfiniteWorldZeroData.CrossSessionGold or NewGold
     StatsTab:AddButton({
         Text = 'Reset Cross-Session Time',
