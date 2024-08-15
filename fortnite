@@ -1819,7 +1819,7 @@ do
     StatsTab:AddDivider()
     local crossSessionTimeText = StatsTab:AddLabel('Cross-Session Time: 0s')
     local crossSessionTimeTick = InfiniteWorldZeroData.CrossSessionTimestamp or tick()
-    local crossSessionGoldGainText = StatsTab:AddLabel('Cross-Session Gold Gain: ' .. (InfiniteWorldZeroData.CrossSessionGold and NewGold-InfiniteWorldZeroData.CrossSessionGold or 0))
+    local crossSessionGoldGainText = StatsTab:AddLabel('CS Gold Gain: ' .. (InfiniteWorldZeroData.CrossSessionGold and NewGold-InfiniteWorldZeroData.CrossSessionGold or 0))
     local crossSessionOldGold = InfiniteWorldZeroData.CrossSessionGold or NewGold
     StatsTab:AddButton({
         Text = 'Reset Cross-Session Time',
@@ -1831,7 +1831,7 @@ do
     StatsTab:AddButton({
         Text = 'Reset Cross-Session Gold',
         Func = function()
-            crossSessionOldGold = NewGold; InfiniteWorldZeroData.CrossSessionGold = crossSessionOldGold; save(); crossSessionGoldGainText:SetText('Cross-Session Gold Gain: 0')
+            crossSessionOldGold = NewGold; InfiniteWorldZeroData.CrossSessionGold = crossSessionOldGold; save(); crossSessionGoldGainText:SetText('CS Gold Gain: 0')
         end,
         DoubleClick = true,
     })
@@ -1864,7 +1864,7 @@ do
                 end
                 goldGainedText:SetText('Gold Gained: ' .. formatNumberWithCommas(NewGold-OldGold))
                 totalGoldText:SetText('Total Gold: ' .. formatNumberWithCommas(NewGold))
-                crossSessionGoldGainText:SetText('Cross-Session Gold Gain: ' .. formatNumberWithCommas(NewGold-crossSessionOldGold))
+                crossSessionGoldGainText:SetText('CS Gold Gain: ' .. formatNumberWithCommas(NewGold-crossSessionOldGold))
             end
             task.wait()
         end
