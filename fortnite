@@ -7,7 +7,7 @@ end
 if InfiniteHub then return end
 getgenv().InfiniteHub = true
 
-print('Infinite Private World Zero v27')
+print('Infinite Private World Zero v28')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -311,6 +311,8 @@ local bestClasses = {'Demon', 'MageOfShadows'}
 local requestDone
 local OldPosition
 local TempCheck = false
+local Nightmares = {1005, 1006, 1007}
+local InNightmare
 if ReplicatedStorage:FindFirstChild("ActiveMission") then
     InMission = true
     MissionObjects = game:GetService("Workspace"):WaitForChild("MissionObjects")
@@ -329,6 +331,7 @@ if ReplicatedStorage:FindFirstChild("ActiveMission") then
     if DungeonID == 23 then
         InAtlantis = true
     end
+    if table.find(Nightmares, DungeonID) then InNightmare = true end
 end
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait() or LocalPlayer.Character
 local HumanoidRootPart = Character:WaitForChild('HumanoidRootPart')
@@ -426,7 +429,6 @@ local HttpService = game:GetService("HttpService")
 local BestMob
 local DoubleDrop = 8136250
 local TowerEnd = game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("TowerFinish").TowerFinish.Description
-local Nightmares = {1005, 1006, 1007}
 local Inventory = Profile:WaitForChild('Inventory'):WaitForChild('Items')
 local MissionData = require(Shared.Missions.MissionData)
 local function missionLevelReq(missionId)
@@ -577,7 +579,7 @@ local ignoreObjects = {
 local specialTargetingDungeons = {
     DireProblem = { Id = 2, ignoreMob = 'BOSSDireBoarwolf' },
     KingSlayer = { Id = 4, ignoreMob = 'BOSSKingCrab' },
-    GravetowerDungeon = { Id = 6, priorityTbl = {'Pillar','BOSSTreeEnt'}, mobWaitTbl = {'BOSSTreeEnt'}, mobWaitTime = 3 },
+    GravetowerDungeon = { Id = 6, ignoreMob = 'BOSSTreeEnt', mobWaitTime = 3 },
     RoughWaters = {Id = 25, ignoreMob = 'DavyJones'},
     VolcanosShadow = { Id = 13, ignoreMob = 'BOSSCerberus' },
     KonoHeartlands = { Id = 24, ignoreMob = 'CorruptedGreaterTree' },
@@ -610,8 +612,8 @@ local WorldData = {
     --HalloweenHub = { Name = 'Spooky Courtyard', Id = 33, OrderId = 15},
     --DragonTown = { Name = 'Dragon Town', Id = 65, OrderId = 14 },
 }
--- Removed Gravetower dungeon because demon insta kills it, Id is 6
-local nextDungeonTbl = {1,3,2,4,11,12,13,7,14,15,16,20,19,18,24,35,21,25,36,23,26,37,27,30,31,29,32,33,34,41,42,43,1005,1006,1007,39,38}
+
+local nextDungeonTbl = {1,3,2,4,6,11,12,13,7,14,15,16,20,19,18,24,35,21,25,36,23,26,37,27,30,31,29,32,33,34,41,42,43,1005,1006,1007,39,38}
 local DungeonData = {
     --World 1--
     { Id = 1, Name = "Crabby Crusade", World = 1, Code = '1-1' },
@@ -2407,7 +2409,7 @@ do
         end
 
 
-        local function missionEndRestartOrNextEvent()
+        function missionEndRestartOrNextEvent()
             if Toggles.Autofarm.Value then
                 if Toggles.nightmareLoop.Value and table.find(Nightmares, DungeonID) then
                     local nextNightmareId = Nightmares[table.find(Nightmares, DungeonID)+1]
@@ -3175,7 +3177,7 @@ Toggles.Killaura:OnChanged(function()
                         task.wait(3)
                         if tick()-lastAttackTime >= Options.timeoutTimer.Value then
                             Library:Notify('Timeout! Force restarting dungeon!')
-                            StartRaid(DungeonID, DifficultyID)
+                            missionEndRestartOrNextEvent()
                             break
                         else
                             Options.Offset:SetValue(oldValue)
