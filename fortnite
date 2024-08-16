@@ -6,8 +6,6 @@ if not game:IsLoaded() then
 end
 if InfiniteHub then return end
 getgenv().InfiniteHub = true
-
-print('Infinite Private World Zero v2')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -293,18 +291,20 @@ local NewGold = OldGold
 local MissionObjects
 local MissionScripts
 local DungeonID
-local DifficultyID = nil
+local DifficultyID
 local Towers = {21,23,27,29,34,43}
-local InMission = false
-local InDungeon = false
-local InAtlantis = false
-local InTower = false
-local InInfiniteTower = false
+local Nightmares = {1005, 1006, 1007}
+local InMission 
+local InDungeon 
+local InAtlantis
+local InTower
+local InInfiniteTower 
+local InNightmare
 local DungeonCompleted
 local bestClasses = {'Demon', 'MageOfShadows'}
 local requestDone
 local OldPosition
-local TempCheck = false
+local TempCheck
 if ReplicatedStorage:FindFirstChild("ActiveMission") then
     InMission = true
     MissionObjects = game:GetService("Workspace"):WaitForChild("MissionObjects")
@@ -322,6 +322,9 @@ if ReplicatedStorage:FindFirstChild("ActiveMission") then
     end  
     if DungeonID == 23 then
         InAtlantis = true
+    end
+    if table.find(Nightmares, DungeonID) then
+        InNightmare = true
     end
 end
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait() or LocalPlayer.Character
@@ -381,61 +384,76 @@ local finalItemHandledTime = tick()
 local lastChestAppeared = tick()
 local vulnerableTentacleAttacks = {'Piledriver','Slap'}
 local activelyTeleportingToMob
-local function resetCamera()
-    local desiredPov = plr.Character and plr.Character.PrimaryPart and (plr.Character.PrimaryPart:FindFirstChild("Part") or plr.Character.PrimaryPart)
-    if desiredPov and not (camera.CameraSubject == desiredPov) then camera.CameraSubject = desiredPov end
-end
-local function noclip()
-    if plr.Character and plr.Character.PrimaryPart and plr.Character.PrimaryPart.CanCollide then plr.Character.PrimaryPart.CanCollide = false end
-end
-local function unnoclip()
-    if plr.Character and plr.Character.PrimaryPart and not plr.Character.PrimaryPart.CanCollide then plr.Character.PrimaryPart.CanCollide = true end
-end
-local function setMobCamera(toggle, subject)
-    local desiredPov = toggle and subject or plr.Character and plr.Character.PrimaryPart and (plr.Character.PrimaryPart:FindFirstChild("Part") or plr.Character.PrimaryPart)
-    if desiredPov and not (camera.CameraSubject == desiredPov) then camera.CameraSubject = desiredPov end
-end
-local function Mob(v1)
-    if MobList:FindFirstChild(v1) then return require(MobList[v1]) end
-end
-local function SwitchOffhandPerks(v1)
-    Shared.Settings.OffhandPerksActive:FireServer(v1)
-end
-function sortTbl(v1)
-    table.sort(v1, function(a,b)
-        return a < b
-    end)
-end
-function timeElapsed(v)
-    local h = math.floor(v / 3600)
-    local m = math.floor((v % 3600) / 60)
-    local s = math.floor((v % 60))
-    if h > 0 then return h .. 'h ' .. m .. 'm ' .. s .. 's' end
-    if m > 0 and h == 0 then return m .. 'm ' .. s .. 's' end
-    if h == 0 and m == 0 then return s .. 's' end
-end
-function ping()
-    return math.round(plr:GetNetworkPing() * 1000) .. ' ms'
-end
-function ping2()
-    return math.round(game.Stats.PerformanceStats.Ping:GetValue()) .. ' ms'
-end
 
+-- Functions
+do
+    function resetCamera()
+        local desiredPov = plr.Character and plr.Character.PrimaryPart and (plr.Character.PrimaryPart:FindFirstChild("Part") or plr.Character.PrimaryPart)
+        if desiredPov and not (camera.CameraSubject == desiredPov) then camera.CameraSubject = desiredPov end
+    end
 
-local function formatNumberWithCommas(value)
-    local formatted = tostring(value)
-    local k
-    repeat
-        formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
-    until k == 0
-    return formatted
+    function noclip()
+        if plr.Character and plr.Character.PrimaryPart and plr.Character.PrimaryPart.CanCollide then plr.Character.PrimaryPart.CanCollide = false end
+    end
+
+    function unnoclip()
+        if plr.Character and plr.Character.PrimaryPart and not plr.Character.PrimaryPart.CanCollide then plr.Character.PrimaryPart.CanCollide = true end
+    end
+
+    function setMobCamera(toggle, subject)
+        local desiredPov = toggle and subject or plr.Character and plr.Character.PrimaryPart and (plr.Character.PrimaryPart:FindFirstChild("Part") or plr.Character.PrimaryPart)
+        if desiredPov and not (camera.CameraSubject == desiredPov) then camera.CameraSubject = desiredPov end
+    end
+
+    function Mob(v1)
+        if MobList:FindFirstChild(v1) then return require(MobList[v1]) end
+    end
+
+    function SwitchOffhandPerks(v1)
+        Shared.Settings.OffhandPerksActive:FireServer(v1)
+    end
+
+    function sortTbl(v1)
+        table.sort(v1, function(a,b)
+            return a < b
+        end)
+    end
+
+    function timeElapsed(v)
+        local h = math.floor(v / 3600)
+        local m = math.floor((v % 3600) / 60)
+        local s = math.floor((v % 60))
+        if h > 0 then return h .. 'h ' .. m .. 'm ' .. s .. 's' end
+        if m > 0 and h == 0 then return m .. 'm ' .. s .. 's' end
+        if h == 0 and m == 0 then return s .. 's' end
+    end
+
+    function ping()
+        return math.round(plr:GetNetworkPing() * 1000) .. ' ms'
+    end
+
+    function ping2()
+        return math.round(game.Stats.PerformanceStats.Ping:GetValue()) .. ' ms'
+    end
+
+    function nextInTbl(tbl, indexValue)
+        return tbl[table.find(tbl, indexValue)+1] or tbl[1]
+    end
+
+    function formatNumberWithCommas(value)
+        local formatted = tostring(value)
+        local k
+        repeat
+            formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
+        until k == 0
+        return formatted
+    end
 end
 
 local HttpService = game:GetService("HttpService")
 local BestMob
 local DoubleDrop = 8136250
 local TowerEnd = game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("TowerFinish").TowerFinish.Description
-local Nightmares = {1005, 1006, 1007}
 local Inventory = Profile:WaitForChild('Inventory'):WaitForChild('Items')
 local MissionData = require(Shared.Missions.MissionData)
 local function missionLevelReq(missionId)
@@ -1254,7 +1272,7 @@ kickListener = guiService.ErrorMessageChanged:Connect(function(msg)
         save()
 
         if msg:lower():find("exploit") then
-            local reportStr = 'Killaura Delay: ``' .. Options.KillauraDelay.Value .. '``\nClass: ``' .. ClassData[Class].DisplayName .. '``\nPing: ``' .. ping2() .. '``' 
+            local reportStr = 'Killaura Delay: ``' .. Options.KillauraDelay.Value .. '``\nClass: ``' .. ClassData[Class].DisplayName .. '``\nPing: ``' .. ping2() .. '``'
             if InMission then
                 reportStr = reportStr .. '\nCode: ``' .. codeStr .. '``\nMission: ``' .. DungeonName .. '``'
             end
@@ -1324,7 +1342,7 @@ end
 LibraryLoaded = true
 
 local Window = Library:CreateWindow({
-    Title = 'Infinite | World Zero                        Made by @InfiniteKill',
+    Title = 'Infinite | World Zero v2.01                   Made by @InfiniteKill',
     Center = false,
     AutoShow = true,
     TabPadding = 8,
@@ -1409,8 +1427,8 @@ do
         Suffix = '% HP'
     })
 
-    -- Premium Features
-    Farming:AddSlider('LifeStealInterval', {
+     -- Premium Features
+     Farming:AddSlider('LifeStealInterval', {
         Text = 'Life Steal Repeats',
         Default = 1,
         Min = 1,
@@ -1523,6 +1541,10 @@ do
         --Tooltip = "Does not charge cannon",
         Default = false, -- Default value (true / false)
     })
+    FarmingSettings:AddToggle('skipScarecrowNm', {
+        Text = 'Skip Scarecrow Defense (NM Loop)',
+        Default = false, -- Default value (true / false)
+    })
     FarmingSettings:AddToggle('rejoinDungeon', {
         Text = 'Rejoin Last Dungeon',
         Tooltip = 'Automatically starts the last dungeon started within your desired time limit',
@@ -1550,7 +1572,6 @@ do
         InfiniteWorldZeroData.RejoinLastDungeonThreshold = rjdLimitTbl[c]
         save()
     end)
-    FarmingSettings:AddDivider()
     FarmingSettings:AddInput('dungeonHook', {
         Numeric = false, -- true / false, only allows numbers
         Finished = true, -- true / false, only calls callback when you press enter
@@ -2476,14 +2497,19 @@ do
             --if not s and e then warn('[Infinite]: ' .. e) end
         end
 
-
         function missionEndRestartOrNextEvent()
             if Toggles.Autofarm.Value then
                 if Toggles.nightmareLoop.Value and table.find(Nightmares, DungeonID) then
-                    local nextNightmareId = Nightmares[table.find(Nightmares, DungeonID)+1]
-                    if nextNightmareId then StartRaid(nextNightmareId, DifficultyID) else StartRaid(1005, DifficultyID) end
+                    local nextNightmareId = nextInTbl(Nightmares, DungeonID)
+
+                    -- Skip Scarecrow Defense if the toggle is on because it takes too fucking long
+                    if MissionData[nextNightmareId].InternalID == 3 and Toggles.skipScarecrowNm.Value then 
+                        nextNightmareId = nextInTbl(Nightmares, nextNightmareId); Library:Notify('Skipping Scarecrow Defense') 
+                    end
+
+                    StartRaid(nextNightmareId, DifficultyID)
                 elseif Toggles.NextDungeon.Value and DungeonID ~= 38 then -- won't go to next dungeon in infinite tower because it is the last dungeon in the list
-                    local nextDungeonId = nextDungeonTbl[table.find(nextDungeonTbl, DungeonID)+1]
+                    local nextDungeonId = nextInTbl(nextDungeonTbl, DungeonID)
                     local isTowerNext = table.find(Towers2, nextDungeonId)
                     local joiningNextDungeon = Profile.Level.Value >= missionLevelReq(nextDungeonId) and (DifficultyID == 5 or InTower or InInfiniteTower)
                     local joiningDungeonId = joiningNextDungeon and nextDungeonId or DungeonID
