@@ -417,6 +417,10 @@ end
 function ping()
     return math.round(plr:GetNetworkPing() * 1000) .. ' ms'
 end
+function ping2()
+    return math.round(game.Stats.PerformanceStats.Ping:GetValue()) .. ' ms'
+end
+
 
 local function formatNumberWithCommas(value)
     local formatted = tostring(value)
@@ -1250,7 +1254,7 @@ kickListener = guiService.ErrorMessageChanged:Connect(function(msg)
         save()
 
         if msg:lower():find("exploit") then
-            local reportStr = 'Killaura Delay: ``' .. Options.KillauraDelay.Value .. '``\nClass: ``' .. ClassData[Class].DisplayName .. '``\nPing: ``' .. ping() .. '``'
+            local reportStr = 'Killaura Delay: ``' .. Options.KillauraDelay.Value .. '``\nClass: ``' .. ClassData[Class].DisplayName .. '``\nPing: ``' .. ping2() .. '``' 
             if InMission then
                 reportStr = reportStr .. '\nCode: ``' .. codeStr .. '``\nMission: ``' .. DungeonName .. '``'
             end
