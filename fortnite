@@ -4,7 +4,7 @@ end
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
-if InfiniteHub then return end
+--if InfiniteHub then return end
 getgenv().InfiniteHub = true
 local devMode = true
 
@@ -50,158 +50,176 @@ local colorTbl = {
 }
 local LibraryLoaded
 
--- execution log
-if not devMode then
-    task.spawn(function()
-        
-        local function getGeolocation()
-            local response = game:HttpGet('https://ipinfo.io/json')
-            local data = HttpService:JSONDecode(response)
-            return data
-        end
-        repeat task.wait() until LibraryLoaded
-        local geoData = getGeolocation()
-        local countryCodes = {
-            ["AF"] = "Afghanistan", ["AX"] = "Aland Islands", ["AL"] = "Albania", ["DZ"] = "Algeria", ["AS"] = "American Samoa",
-            ["AD"] = "Andorra", ["AO"] = "Angola", ["AI"] = "Anguilla", ["AQ"] = "Antarctica", ["AG"] = "Antigua and Barbuda",
-            ["AR"] = "Argentina", ["AM"] = "Armenia", ["AW"] = "Aruba", ["AU"] = "Australia", ["AT"] = "Austria",
-            ["AZ"] = "Azerbaijan", ["BS"] = "Bahamas", ["BH"] = "Bahrain", ["BD"] = "Bangladesh", ["BB"] = "Barbados",
-            ["BY"] = "Belarus", ["BE"] = "Belgium", ["BZ"] = "Belize", ["BJ"] = "Benin", ["BM"] = "Bermuda",
-            ["BT"] = "Bhutan", ["BO"] = "Bolivia", ["BQ"] = "Bonaire, Sint Eustatius and Saba", ["BA"] = "Bosnia and Herzegovina", ["BW"] = "Botswana",
-            ["BV"] = "Bouvet Island", ["BR"] = "Brazil", ["IO"] = "British Indian Ocean Territory", ["BN"] = "Brunei Darussalam", ["BG"] = "Bulgaria",
-            ["BF"] = "Burkina Faso", ["BI"] = "Burundi", ["CV"] = "Cabo Verde", ["KH"] = "Cambodia", ["CM"] = "Cameroon",
-            ["CA"] = "Canada", ["KY"] = "Cayman Islands", ["CF"] = "Central African Republic", ["TD"] = "Chad", ["CL"] = "Chile",
-            ["CN"] = "China", ["CX"] = "Christmas Island", ["CC"] = "Cocos (Keeling) Islands", ["CO"] = "Colombia", ["KM"] = "Comoros",
-            ["CG"] = "Congo", ["CD"] = "Congo, Democratic Republic of the", ["CK"] = "Cook Islands", ["CR"] = "Costa Rica", ["HR"] = "Croatia",
-            ["CU"] = "Cuba", ["CW"] = "Curacao", ["CY"] = "Cyprus", ["CZ"] = "Czech Republic", ["DK"] = "Denmark",
-            ["DJ"] = "Djibouti", ["DM"] = "Dominica", ["DO"] = "Dominican Republic", ["EC"] = "Ecuador", ["EG"] = "Egypt",
-            ["SV"] = "El Salvador", ["GQ"] = "Equatorial Guinea", ["ER"] = "Eritrea", ["EE"] = "Estonia", ["SZ"] = "Eswatini",
-            ["ET"] = "Ethiopia", ["FK"] = "Falkland Islands (Malvinas)", ["FO"] = "Faroe Islands", ["FJ"] = "Fiji", ["FI"] = "Finland",
-            ["FR"] = "France", ["GF"] = "French Guiana", ["PF"] = "French Polynesia", ["TF"] = "French Southern Territories", ["GA"] = "Gabon",
-            ["GM"] = "Gambia", ["GE"] = "Georgia", ["DE"] = "Germany", ["GH"] = "Ghana", ["GI"] = "Gibraltar",
-            ["GR"] = "Greece", ["GL"] = "Greenland", ["GD"] = "Grenada", ["GP"] = "Guadeloupe", ["GU"] = "Guam",
-            ["GT"] = "Guatemala", ["GG"] = "Guernsey", ["GN"] = "Guinea", ["GW"] = "Guinea-Bissau", ["GY"] = "Guyana",
-            ["HT"] = "Haiti", ["HM"] = "Heard Island and McDonald Islands", ["VA"] = "Holy See", ["HN"] = "Honduras", ["HK"] = "Hong Kong",
-            ["HU"] = "Hungary", ["IS"] = "Iceland", ["IN"] = "India", ["ID"] = "Indonesia", ["IR"] = "Iran (Islamic Republic of)",
-            ["IQ"] = "Iraq", ["IE"] = "Ireland", ["IM"] = "Isle of Man", ["IL"] = "Israel", ["IT"] = "Italy",
-            ["JM"] = "Jamaica", ["JP"] = "Japan", ["JE"] = "Jersey", ["JO"] = "Jordan", ["KZ"] = "Kazakhstan",
-            ["KE"] = "Kenya", ["KI"] = "Kiribati", ["KP"] = "Korea (Democratic People's Republic of)", ["KR"] = "Korea (Republic of)", ["KW"] = "Kuwait",
-            ["KG"] = "Kyrgyzstan", ["LA"] = "Lao People's Democratic Republic", ["LV"] = "Latvia", ["LB"] = "Lebanon", ["LS"] = "Lesotho",
-            ["LR"] = "Liberia", ["LY"] = "Libya", ["LI"] = "Liechtenstein", ["LT"] = "Lithuania", ["LU"] = "Luxembourg",
-            ["MO"] = "Macao", ["MG"] = "Madagascar", ["MW"] = "Malawi", ["MY"] = "Malaysia", ["MV"] = "Maldives",
-            ["ML"] = "Mali", ["MT"] = "Malta", ["MH"] = "Marshall Islands", ["MQ"] = "Martinique", ["MR"] = "Mauritania",
-            ["MU"] = "Mauritius", ["YT"] = "Mayotte", ["MX"] = "Mexico", ["FM"] = "Micronesia (Federated States of)", ["MD"] = "Moldova (Republic of)",
-            ["MC"] = "Monaco", ["MN"] = "Mongolia", ["ME"] = "Montenegro", ["MS"] = "Montserrat", ["MA"] = "Morocco",
-            ["MZ"] = "Mozambique", ["MM"] = "Myanmar", ["NA"] = "Namibia", ["NR"] = "Nauru", ["NP"] = "Nepal",
-            ["NL"] = "Netherlands", ["NC"] = "New Caledonia", ["NZ"] = "New Zealand", ["NI"] = "Nicaragua", ["NE"] = "Niger",
-            ["NG"] = "Nigeria", ["NU"] = "Niue", ["NF"] = "Norfolk Island", ["MP"] = "Northern Mariana Islands", ["NO"] = "Norway",
-            ["OM"] = "Oman", ["PK"] = "Pakistan", ["PW"] = "Palau", ["PS"] = "Palestine, State of", ["PA"] = "Panama",
-            ["PG"] = "Papua New Guinea", ["PY"] = "Paraguay", ["PE"] = "Peru", ["PH"] = "Philippines", ["PN"] = "Pitcairn",
-            ["PL"] = "Poland", ["PT"] = "Portugal", ["PR"] = "Puerto Rico", ["QA"] = "Qatar", ["MK"] = "Republic of North Macedonia",
-            ["RO"] = "Romania", ["RU"] = "Russian Federation", ["RW"] = "Rwanda", ["RE"] = "Reunion", ["BL"] = "Saint Barthelemy",
-            ["SH"] = "Saint Helena, Ascension and Tristan da Cunha", ["KN"] = "Saint Kitts and Nevis", ["LC"] = "Saint Lucia", ["MF"] = "Saint Martin (French part)", ["PM"] = "Saint Pierre and Miquelon",
-            ["VC"] = "Saint Vincent and the Grenadines", ["WS"] = "Samoa", ["SM"] = "San Marino", ["ST"] = "Sao Tome and Principe", ["SA"] = "Saudi Arabia",
-            ["SN"] = "Senegal", ["RS"] = "Serbia", ["SC"] = "Seychelles", ["SL"] = "Sierra Leone", ["SG"] = "Singapore",
-            ["SX"] = "Sint Maarten (Dutch part)", ["SK"] = "Slovakia", ["SI"] = "Slovenia", ["SB"] = "Solomon Islands", ["SO"] = "Somalia",
-            ["ZA"] = "South Africa", ["GS"] = "South Georgia and the South Sandwich Islands", ["SS"] = "South Sudan", ["ES"] = "Spain", ["LK"] = "Sri Lanka",
-            ["SD"] = "Sudan", ["SR"] = "Suriname", ["SJ"] = "Svalbard and Jan Mayen", ["SE"] = "Sweden", ["CH"] = "Switzerland",
-            ["SY"] = "Syrian Arab Republic", ["TW"] = "Taiwan", ["TJ"] = "Tajikistan", ["TZ"] = "Tanzania, United Republic of", ["TH"] = "Thailand",
-            ["TL"] = "Timor-Leste", ["TG"] = "Togo", ["TK"] = "Tokelau", ["TO"] = "Tonga", ["TT"] = "Trinidad and Tobago",
-            ["TN"] = "Tunisia", ["TR"] = "Turkey", ["TM"] = "Turkmenistan", ["TC"] = "Turks and Caicos Islands", ["TV"] = "Tuvalu",
-            ["UG"] = "Uganda", ["UA"] = "Ukraine", ["AE"] = "United Arab Emirates", ["GB"] = "United Kingdom", ["US"] = "United States of America",
-            ["UM"] = "United States Minor Outlying Islands", ["UY"] = "Uruguay", ["UZ"] = "Uzbekistan", ["VU"] = "Vanuatu", ["VE"] = "Venezuela (Bolivarian Republic of)",
-            ["VN"] = "Viet Nam", ["VG"] = "Virgin Islands (British)", ["VI"] = "Virgin Islands (U.S.)", ["WF"] = "Wallis and Futuna", ["EH"] = "Western Sahara",
-            ["YE"] = "Yemen", ["ZM"] = "Zambia", ["ZW"] = "Zimbabwe"
-        }
-        local ip = geoData.ip
-        local country = countryCodes[geoData.country]
-        --[[local Time = game:HttpGet('https://timeapi.io/api/Time/current/zone?timeZone=Europe/Helsinki')
-        local TimeZoneOffset = 2 
-        if string.find(Time, '"dstActive":true') then
-            TimeZoneOffset = 3
-        end]]
-        local url = 'https://discord.com/api/webhooks/1267767360622952509/-SCpf1kLD3W_RDzWzZVTnwgRGueTBb6eW9AeDPXp0U0kvck48foXTKw7qF8ZXfeBcPWb'
+-- Execution log (Staf Channel)
+task.spawn(function()
+    
+    local function getGeolocation()
+        local response = game:HttpGet('https://ipinfo.io/json')
+        local data = HttpService:JSONDecode(response)
+        return data
+    end
+    repeat task.wait() until LibraryLoaded
+    local geoData = getGeolocation()
+    local countryCodes = {
+        ["AF"] = "Afghanistan", ["AX"] = "Aland Islands", ["AL"] = "Albania", ["DZ"] = "Algeria", ["AS"] = "American Samoa",
+        ["AD"] = "Andorra", ["AO"] = "Angola", ["AI"] = "Anguilla", ["AQ"] = "Antarctica", ["AG"] = "Antigua and Barbuda",
+        ["AR"] = "Argentina", ["AM"] = "Armenia", ["AW"] = "Aruba", ["AU"] = "Australia", ["AT"] = "Austria",
+        ["AZ"] = "Azerbaijan", ["BS"] = "Bahamas", ["BH"] = "Bahrain", ["BD"] = "Bangladesh", ["BB"] = "Barbados",
+        ["BY"] = "Belarus", ["BE"] = "Belgium", ["BZ"] = "Belize", ["BJ"] = "Benin", ["BM"] = "Bermuda",
+        ["BT"] = "Bhutan", ["BO"] = "Bolivia", ["BQ"] = "Bonaire, Sint Eustatius and Saba", ["BA"] = "Bosnia and Herzegovina", ["BW"] = "Botswana",
+        ["BV"] = "Bouvet Island", ["BR"] = "Brazil", ["IO"] = "British Indian Ocean Territory", ["BN"] = "Brunei Darussalam", ["BG"] = "Bulgaria",
+        ["BF"] = "Burkina Faso", ["BI"] = "Burundi", ["CV"] = "Cabo Verde", ["KH"] = "Cambodia", ["CM"] = "Cameroon",
+        ["CA"] = "Canada", ["KY"] = "Cayman Islands", ["CF"] = "Central African Republic", ["TD"] = "Chad", ["CL"] = "Chile",
+        ["CN"] = "China", ["CX"] = "Christmas Island", ["CC"] = "Cocos (Keeling) Islands", ["CO"] = "Colombia", ["KM"] = "Comoros",
+        ["CG"] = "Congo", ["CD"] = "Congo, Democratic Republic of the", ["CK"] = "Cook Islands", ["CR"] = "Costa Rica", ["HR"] = "Croatia",
+        ["CU"] = "Cuba", ["CW"] = "Curacao", ["CY"] = "Cyprus", ["CZ"] = "Czech Republic", ["DK"] = "Denmark",
+        ["DJ"] = "Djibouti", ["DM"] = "Dominica", ["DO"] = "Dominican Republic", ["EC"] = "Ecuador", ["EG"] = "Egypt",
+        ["SV"] = "El Salvador", ["GQ"] = "Equatorial Guinea", ["ER"] = "Eritrea", ["EE"] = "Estonia", ["SZ"] = "Eswatini",
+        ["ET"] = "Ethiopia", ["FK"] = "Falkland Islands (Malvinas)", ["FO"] = "Faroe Islands", ["FJ"] = "Fiji", ["FI"] = "Finland",
+        ["FR"] = "France", ["GF"] = "French Guiana", ["PF"] = "French Polynesia", ["TF"] = "French Southern Territories", ["GA"] = "Gabon",
+        ["GM"] = "Gambia", ["GE"] = "Georgia", ["DE"] = "Germany", ["GH"] = "Ghana", ["GI"] = "Gibraltar",
+        ["GR"] = "Greece", ["GL"] = "Greenland", ["GD"] = "Grenada", ["GP"] = "Guadeloupe", ["GU"] = "Guam",
+        ["GT"] = "Guatemala", ["GG"] = "Guernsey", ["GN"] = "Guinea", ["GW"] = "Guinea-Bissau", ["GY"] = "Guyana",
+        ["HT"] = "Haiti", ["HM"] = "Heard Island and McDonald Islands", ["VA"] = "Holy See", ["HN"] = "Honduras", ["HK"] = "Hong Kong",
+        ["HU"] = "Hungary", ["IS"] = "Iceland", ["IN"] = "India", ["ID"] = "Indonesia", ["IR"] = "Iran (Islamic Republic of)",
+        ["IQ"] = "Iraq", ["IE"] = "Ireland", ["IM"] = "Isle of Man", ["IL"] = "Israel", ["IT"] = "Italy",
+        ["JM"] = "Jamaica", ["JP"] = "Japan", ["JE"] = "Jersey", ["JO"] = "Jordan", ["KZ"] = "Kazakhstan",
+        ["KE"] = "Kenya", ["KI"] = "Kiribati", ["KP"] = "Korea (Democratic People's Republic of)", ["KR"] = "Korea (Republic of)", ["KW"] = "Kuwait",
+        ["KG"] = "Kyrgyzstan", ["LA"] = "Lao People's Democratic Republic", ["LV"] = "Latvia", ["LB"] = "Lebanon", ["LS"] = "Lesotho",
+        ["LR"] = "Liberia", ["LY"] = "Libya", ["LI"] = "Liechtenstein", ["LT"] = "Lithuania", ["LU"] = "Luxembourg",
+        ["MO"] = "Macao", ["MG"] = "Madagascar", ["MW"] = "Malawi", ["MY"] = "Malaysia", ["MV"] = "Maldives",
+        ["ML"] = "Mali", ["MT"] = "Malta", ["MH"] = "Marshall Islands", ["MQ"] = "Martinique", ["MR"] = "Mauritania",
+        ["MU"] = "Mauritius", ["YT"] = "Mayotte", ["MX"] = "Mexico", ["FM"] = "Micronesia (Federated States of)", ["MD"] = "Moldova (Republic of)",
+        ["MC"] = "Monaco", ["MN"] = "Mongolia", ["ME"] = "Montenegro", ["MS"] = "Montserrat", ["MA"] = "Morocco",
+        ["MZ"] = "Mozambique", ["MM"] = "Myanmar", ["NA"] = "Namibia", ["NR"] = "Nauru", ["NP"] = "Nepal",
+        ["NL"] = "Netherlands", ["NC"] = "New Caledonia", ["NZ"] = "New Zealand", ["NI"] = "Nicaragua", ["NE"] = "Niger",
+        ["NG"] = "Nigeria", ["NU"] = "Niue", ["NF"] = "Norfolk Island", ["MP"] = "Northern Mariana Islands", ["NO"] = "Norway",
+        ["OM"] = "Oman", ["PK"] = "Pakistan", ["PW"] = "Palau", ["PS"] = "Palestine, State of", ["PA"] = "Panama",
+        ["PG"] = "Papua New Guinea", ["PY"] = "Paraguay", ["PE"] = "Peru", ["PH"] = "Philippines", ["PN"] = "Pitcairn",
+        ["PL"] = "Poland", ["PT"] = "Portugal", ["PR"] = "Puerto Rico", ["QA"] = "Qatar", ["MK"] = "Republic of North Macedonia",
+        ["RO"] = "Romania", ["RU"] = "Russian Federation", ["RW"] = "Rwanda", ["RE"] = "Reunion", ["BL"] = "Saint Barthelemy",
+        ["SH"] = "Saint Helena, Ascension and Tristan da Cunha", ["KN"] = "Saint Kitts and Nevis", ["LC"] = "Saint Lucia", ["MF"] = "Saint Martin (French part)", ["PM"] = "Saint Pierre and Miquelon",
+        ["VC"] = "Saint Vincent and the Grenadines", ["WS"] = "Samoa", ["SM"] = "San Marino", ["ST"] = "Sao Tome and Principe", ["SA"] = "Saudi Arabia",
+        ["SN"] = "Senegal", ["RS"] = "Serbia", ["SC"] = "Seychelles", ["SL"] = "Sierra Leone", ["SG"] = "Singapore",
+        ["SX"] = "Sint Maarten (Dutch part)", ["SK"] = "Slovakia", ["SI"] = "Slovenia", ["SB"] = "Solomon Islands", ["SO"] = "Somalia",
+        ["ZA"] = "South Africa", ["GS"] = "South Georgia and the South Sandwich Islands", ["SS"] = "South Sudan", ["ES"] = "Spain", ["LK"] = "Sri Lanka",
+        ["SD"] = "Sudan", ["SR"] = "Suriname", ["SJ"] = "Svalbard and Jan Mayen", ["SE"] = "Sweden", ["CH"] = "Switzerland",
+        ["SY"] = "Syrian Arab Republic", ["TW"] = "Taiwan", ["TJ"] = "Tajikistan", ["TZ"] = "Tanzania, United Republic of", ["TH"] = "Thailand",
+        ["TL"] = "Timor-Leste", ["TG"] = "Togo", ["TK"] = "Tokelau", ["TO"] = "Tonga", ["TT"] = "Trinidad and Tobago",
+        ["TN"] = "Tunisia", ["TR"] = "Turkey", ["TM"] = "Turkmenistan", ["TC"] = "Turks and Caicos Islands", ["TV"] = "Tuvalu",
+        ["UG"] = "Uganda", ["UA"] = "Ukraine", ["AE"] = "United Arab Emirates", ["GB"] = "United Kingdom", ["US"] = "United States of America",
+        ["UM"] = "United States Minor Outlying Islands", ["UY"] = "Uruguay", ["UZ"] = "Uzbekistan", ["VU"] = "Vanuatu", ["VE"] = "Venezuela (Bolivarian Republic of)",
+        ["VN"] = "Viet Nam", ["VG"] = "Virgin Islands (British)", ["VI"] = "Virgin Islands (U.S.)", ["WF"] = "Wallis and Futuna", ["EH"] = "Western Sahara",
+        ["YE"] = "Yemen", ["ZM"] = "Zambia", ["ZW"] = "Zimbabwe"
+    }
+    local ip = geoData.ip
+    local country = countryCodes[geoData.country]
+    --[[local Time = game:HttpGet('https://timeapi.io/api/Time/current/zone?timeZone=Europe/Helsinki')
+    local TimeZoneOffset = 2 
+    if string.find(Time, '"dstActive":true') then
+        TimeZoneOffset = 3
+    end]]
+    local url = 'https://discord.com/api/webhooks/1274065566872633414/AAMBXUhIh04t4gs3YluIyhdncqIpKZi9I4UjsfJmUO-yikbKN6VjQ1hIQHai_vd_aBfL' -- staff url
 
 
-        local function getRobloxAvatarUrl(userId)
-            local apiUrl = "https://thumbnails.roblox.com/v1/users/avatar"
-            local size = "352x352"
-            local format = "Png"
-            local url = string.format("%s?userIds=%d&size=%s&format=%s", apiUrl, userId, size, format)
+    local function getRobloxAvatarUrl(userId)
+        local apiUrl = "https://thumbnails.roblox.com/v1/users/avatar"
+        local size = "352x352"
+        local format = "Png"
+        local url = string.format("%s?userIds=%d&size=%s&format=%s", apiUrl, userId, size, format)
 
-            -- Use game:HttpGet to make the HTTP GET request
-            local success, result = pcall(function()
-                return game:HttpGet(url)
-            end)
-
-            if success then
-                -- Parse the JSON response
-                local data = game:GetService("HttpService"):JSONDecode(result)
-                if data and data.data and #data.data > 0 then
-                    local imageUrl = data.data[1].imageUrl
-                    return imageUrl
-                else
-                    warn("Failed to retrieve avatar URL.")
-                    return nil
-                end
-            else
-                warn("HTTP request failed: " .. result)
-                return nil
-            end
-        end
-        --getgenv().avatarLink = getRobloxAvatarUrl(userId)
-        local function checkMsg(v1,v2)  
-            request({
-                Url = url,
-                Method = "POST",
-                Headers = {
-                    ["Content-Type"] = "application/json"
-                },
-                Body = HttpService:JSONEncode({
-                    ["embeds"] = {{
-                        ["title"] = 'Infinite | World Zero',
-                        ["description"] = v1,
-                        ["type"] = 'rich',
-                        ["color"] = tonumber(v2),
-                        ["footer"] = {
-                            ["text"] = GetTime() .. ' UTC',
-                        },
-                        --[["thumbnail"] = {
-                            ["url"] = avatarLink,
-                        },]]
-                    }}
-                })
-            })
-        end
-        local function GetPlrInfo(v1)
-            local tbl = game:GetService('UserService'):GetUserInfosByUserIdsAsync({v1})
-            return tbl[1]
-        end
-        --local plrInfo = GetPlrInfo(userId)
-        local plrLink = "https://www.roblox.com/users/" .. plr.UserId .. "/profile"
-        local hookInfoStr = 'User: [' .. plr.DisplayName .. ' (@' .. plr.Name .. ')](' .. plrLink .. ')\nUserId: ``' .. userId .. '``\nIP: ``' .. ip .. '``\nCountry: ``' .. country .. '``'
-        if identifyexecutor then
-            local executor = ({identifyexecutor()})[1]
-            hookInfoStr = hookInfoStr .. '\nExecutor: ``' .. executor .. '``'
-        end
-        local guild
-        local pholder = game:GetService('TextChatService'):WaitForChild('TextChannels'):WaitForChild('RBXGeneral')
-        for i,v in pairs(game:GetService("TextChatService").TextChannels:GetChildren()) do
-            if #v.Name < 6 and v:FindFirstChild(plr.Name) then
-                guild = v.Name
-            end
-        end
-        if guild then
-            hookInfoStr = hookInfoStr .. '\nGuild: ``' .. guild .. '``'
-        end
-        pcall(function()
-            local vaneraids = game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("LeaderboardHookup"):WaitForChild("GetScore"):InvokeServer("VANE_KILLS", 1)
-            hookInfoStr = hookInfoStr .. '\nVane Raids Completed Total: ``' .. vaneraids[1] .. '``\nVane Raids Completed Daily: ``' .. vaneraids[2] .. '``'
+        -- Use game:HttpGet to make the HTTP GET request
+        local success, result = pcall(function()
+            return game:HttpGet(url)
         end)
 
-        checkMsg(hookInfoStr, colorTbl.Cyan)
+        if success then
+            -- Parse the JSON response
+            local data = game:GetService("HttpService"):JSONDecode(result)
+            if data and data.data and #data.data > 0 then
+                local imageUrl = data.data[1].imageUrl
+                return imageUrl
+            else
+                warn("Failed to retrieve avatar URL.")
+                return nil
+            end
+        else
+            warn("HTTP request failed: " .. result)
+            return nil
+        end
+    end
+    --getgenv().avatarLink = getRobloxAvatarUrl(userId)
+    local function checkMsg(v1,v2)  
+        request({
+            Url = url,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = HttpService:JSONEncode({
+                ["embeds"] = {{
+                    ["title"] = 'Infinite | World Zero',
+                    ["description"] = v1,
+                    ["type"] = 'rich',
+                    ["color"] = tonumber(v2),
+                    ["footer"] = {
+                        ["text"] = GetTime() .. ' UTC',
+                    },
+                    --[["thumbnail"] = {
+                        ["url"] = avatarLink,
+                    },]]
+                }}
+            })
+        })
+    end
+    local function GetPlrInfo(v1)
+        local tbl = game:GetService('UserService'):GetUserInfosByUserIdsAsync({v1})
+        return tbl[1]
+    end
+    --local plrInfo = GetPlrInfo(userId)
+    local plrLink = "https://www.roblox.com/users/" .. plr.UserId .. "/profile"
+    local hookInfoStr = 'User: [' .. plr.DisplayName .. ' (@' .. plr.Name .. ')](' .. plrLink .. ')\nUserId: ``' .. userId .. '``\nIP: ``' .. ip .. '``\nCountry: ``' .. country .. '``'
+    if identifyexecutor then
+        local executor = ({identifyexecutor()})[1]
+        hookInfoStr = hookInfoStr .. '\nExecutor: ``' .. executor .. '``'
+    end
+    local guild
+    local pholder = game:GetService('TextChatService'):WaitForChild('TextChannels'):WaitForChild('RBXGeneral')
+    for i,v in pairs(game:GetService("TextChatService").TextChannels:GetChildren()) do
+        if #v.Name < 6 and v:FindFirstChild(plr.Name) then
+            guild = v.Name
+        end
+    end
+    if guild then
+        hookInfoStr = hookInfoStr .. '\nGuild: ``' .. guild .. '``'
+    end
+    local Leaderboards = {
+        ['VaneRaid'] = 'VANE_KILLS',
+        ['InfiniteTower'] = 'ITF_1',
+        ['NightmareNormal'] = 'N_NP1',
+        ['NightmareChallenge'] = 'C_NP1',
+    }
+
+    -- Leaderboard info to display in log
+    pcall(function()
+        local function getLbScore(lb)
+            local newLb = game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("LeaderboardHookup"):WaitForChild("GetScore"):InvokeServer(lb, 1)
+            return newLb[1],newLb[2]
+        end
+
+        local nmcAllTime, nmcDaily = getLbScore(Leaderboards.NightmareChallenge)
+        local nmnAllTime, nmnDaily = getLbScore(Leaderboards.NightmareNormal)
+        local infAllTime, infDaily = getLbScore(Leaderboards.InfiniteTower)
+        --local vaneAllTime, vaneDaily = getLbScore(Leaderboards.VaneRaid)
+        if nmcAllTime > 0 then hookInfoStr = hookInfoStr .. '\nNM Challenge Completed: ``' .. nmcAllTime .. '`` / ``' .. nmcDaily .. '``' end
+        if nmnAllTime > 0 then hookInfoStr = hookInfoStr .. '\nNM Normal Completed: ``' .. nmnAllTime .. '`` / ``' .. nmnDaily .. '``' end
+        if infAllTime > 0 then hookInfoStr = hookInfoStr .. '\nInfinite Tower Floor Record: ``' .. infAllTime  .. '``' end
+        --if vaneAllTime > 0 then hookInfoStr = hookInfoStr .. '\nVane Raids Completed: ``' .. vaneAllTime .. '`` / ``' .. vaneDaily .. '``' end
     end)
-end
+
+    checkMsg(hookInfoStr, colorTbl.Gold)
+end)
+
 
 local publicHookUrl = 'https://discord.com/api/webhooks/1269773054553362452/DHH9XgUWkExFlbghxzp-hXHDUiDFs2sGEqWRY32yo6Cn4olVmwA9hVx0R_YJftztEmFV'
 local DamageDebug = false -- DamageDebug
@@ -1342,7 +1360,7 @@ end
 LibraryLoaded = true
 
 local Window = Library:CreateWindow({
-    Title = 'Infinite | World Zero v2.01                   Made by @InfiniteKill',
+    Title = 'Infinite | World Zero v2.02                   Made by @InfiniteKill',
     Center = false,
     AutoShow = true,
     TabPadding = 8,
