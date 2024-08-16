@@ -7,7 +7,7 @@ end
 if InfiniteHub then return end
 getgenv().InfiniteHub = true
 
-print('Infinite Private World Zero v33')
+print('Infinite Private World Zero v34')
 local devMode = true
 
 local Players = game:GetService('Players')
@@ -216,7 +216,7 @@ local dungeonEndGold
 local ownsDoubleDrop = false
 local mobRoot, attackPos, mobPos, dist, originDist, isBoss, mobHp
 local httpRequestSent = false
-local fileSystemEnabled = isfile and readfile and writefile and true
+local fileSystemEnabled = isfile and readfile and writefile
 local lastAttackTime
 pcall(function()
     ownsDoubleDrop = game:GetService("MarketplaceService"):UserOwnsGamePassAsync(LocalPlayer.UserId, 8136250)
@@ -2397,7 +2397,8 @@ do
         function msg(status, color, time)  
             --local s,e = pcall(function()
                 local newLink = Options.dungeonHook.Value
-                local completionStr = 'Code: ``' .. codeStr .. '``\nMission: ``' .. dungname .. '``\nTime: ``' .. math.round(time/0.1) / 10 .. 's``\nClass: ' .. '``' .. ClassData[Class].DisplayName .. '``'
+                local timeStr = time > 600 and timeElapsed(time) or math.round(time/0.1) / 10 .. 's'
+                local completionStr = 'Code: ``' .. codeStr .. '``\nMission: ``' .. dungname .. '``\nTime: ``' .. timeStr .. '``\nClass: ' .. '``' .. ClassData[Class].DisplayName .. '``'
                 if fileSystemEnabled then
                     if InfiniteWorldZeroData.LastDungeonCompletion then
                         completionStr = completionStr .. '\nTime Since Last Completion: ``' .. math.round((dungeonEndTime-InfiniteWorldZeroData.LastDungeonCompletion)/0.1) / 10 .. 's``'
@@ -2444,7 +2445,7 @@ do
                 elseif Toggles.NextDungeon.Value and DungeonID ~= 38 then -- won't go to next dungeon in infinite tower because it is the last dungeon in the list
                     local nextDungeonId = nextDungeonTbl[table.find(nextDungeonTbl, DungeonID)+1]
                     local isTowerNext = table.find(Towers2, nextDungeonId)
-                    local joiningNextDungeon = Profile.Level.Value >= missionLevelReq(nextDungeonId) and (DifficultyID == 5 or InTower or InInfiniteTower) and true or false
+                    local joiningNextDungeon = Profile.Level.Value >= missionLevelReq(nextDungeonId) and (DifficultyID == 5 or InTower or InInfiniteTower)
                     local joiningDungeonId = joiningNextDungeon and nextDungeonId or DungeonID
                     local joiningDifficultyId = joiningNextDungeon and (isTowerNext and 'tower' or oppositeDifficulty[DifficultyID]) or DifficultyID == 1 and 5 or DifficultyID
                     if joiningDifficultyId == 'tower' then joiningDifficultyId = nil end
@@ -2504,10 +2505,10 @@ do
                             if Options[Perk.Value] then
                                 local perkValue = math.round(Perk.PerkValue.Value*100)
                                 local minDesiredValue = Options[Perk.Value].Value
-                                local countingPerk = minDesiredValue > math.round(PerkData[Perk.Value].StatRange[1]*100) and true
+                                local countingPerk = minDesiredValue > math.round(PerkData[Perk.Value].StatRange[1]*100)
                                 local perkName = PerkData[Perk.Value].DisplayName
-                                local isGoodPerk = countingPerk and perkValue >= minDesiredValue and true
-                                local isPerfPerk = countingPerk and perkValue == math.round(PerkData[Perk.Value].StatRange[2]*100) and true
+                                local isGoodPerk = countingPerk and perkValue >= minDesiredValue
+                                local isPerfPerk = countingPerk and perkValue == math.round(PerkData[Perk.Value].StatRange[2]*100)
                                 if isGoodPerk and not goodPerkExists then goodPerkExists = true end
                                 if isPerfPerk and not perfPerkExists then perfPerkExists = true end
                                 itemProfile = itemProfile .. '\n' .. (isPerfPerk and '### <:Gold:832693611396857886> ' or isGoodPerk and '### :green_circle: ' or '### :red_circle: ') .. perkName .. ': ``' .. perkValue .. '%``'
@@ -2567,7 +2568,7 @@ do
                         end
                     end)
                 end
-                local canOpenOtherChests = DungeonCompleted and DungeonID ~= 39 and true or false
+                local canOpenOtherChests = DungeonCompleted and not InInfiniteTower
                 if (ownsDoubleDrop or canOpenOtherChests) and c.Name == ChestName2 then
                     lastChestAppeared = tick()
                     if DungeonCompleted then finalChestsAppeared = true; finalItemHandled = false end
@@ -2629,10 +2630,10 @@ do
                         if Options[Perk.Value] then
                             local perkValue = math.round(Perk.PerkValue.Value*100)
                             local minDesiredValue = Options[Perk.Value].Value
-                            local countingPerk = minDesiredValue > math.round(PerkData[Perk.Value].StatRange[1]*100) and true
+                            local countingPerk = minDesiredValue > math.round(PerkData[Perk.Value].StatRange[1]*100)
                             local perkName = PerkData[Perk.Value].DisplayName
-                            local isGoodPerk = countingPerk and perkValue >= minDesiredValue and true
-                            local isPerfPerk = countingPerk and perkValue == math.round(PerkData[Perk.Value].StatRange[2]*100) and true
+                            local isGoodPerk = countingPerk and perkValue >= minDesiredValue
+                            local isPerfPerk = countingPerk and perkValue == math.round(PerkData[Perk.Value].StatRange[2]*100)
                             if isGoodPerk and not goodPerkExists then goodPerkExists = true end
                             if isPerfPerk and not perfPerkExists then perfPerkExists = true end
                             itemProfile = itemProfile .. '\n' .. (isPerfPerk and '### <:Gold:832693611396857886> ' or isGoodPerk and '### :green_circle: ' or '### :red_circle: ') .. perkName .. ': ``' .. perkValue .. '%``'
