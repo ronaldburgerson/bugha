@@ -198,6 +198,7 @@ task.spawn(function()
         ['InfiniteTower'] = 'ITF_1',
         ['NightmareNormal'] = 'N_NP1',
         ['NightmareChallenge'] = 'C_NP1',
+        ['GuildSeason11'] = 'G_POINTS11',
     }
 
     -- Leaderboard info to display in log
@@ -207,10 +208,12 @@ task.spawn(function()
             return newLb[1],newLb[2]
         end
 
+        local gs11AllTime, gs11Daily = getLbScore(Leaderboards.GuildSeason11)
         local nmcAllTime, nmcDaily = getLbScore(Leaderboards.NightmareChallenge)
         local nmnAllTime, nmnDaily = getLbScore(Leaderboards.NightmareNormal)
         local infAllTime, infDaily = getLbScore(Leaderboards.InfiniteTower)
         --local vaneAllTime, vaneDaily = getLbScore(Leaderboards.VaneRaid)
+        if gs11AllTime > 0 then hookInfoStr = hookInfoStr .. '\nGuild Points: ``' .. gs11AllTime .. '``' end
         if nmcAllTime > 0 then hookInfoStr = hookInfoStr .. '\nNM Challenge Completed: ``' .. nmcAllTime .. '`` / ``' .. nmcDaily .. '``' end
         if nmnAllTime > 0 then hookInfoStr = hookInfoStr .. '\nNM Normal Completed: ``' .. nmnAllTime .. '`` / ``' .. nmnDaily .. '``' end
         if infAllTime > 0 then hookInfoStr = hookInfoStr .. '\nInfinite Tower Floor Record: ``' .. infAllTime  .. '``' end
@@ -1360,7 +1363,7 @@ end
 LibraryLoaded = true
 
 local Window = Library:CreateWindow({
-    Title = 'Infinite | World Zero v2.02                   Made by @InfiniteKill',
+    Title = 'Infinite | World Zero v2.03                   Made by @InfiniteKill',
     Center = false,
     AutoShow = true,
     TabPadding = 8,
