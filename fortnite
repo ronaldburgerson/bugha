@@ -631,7 +631,7 @@ local specialTargetingDungeons = {
     KonoHeartlands = { Id = 24, ignoreMob = 'CorruptedGreaterTree' },
     AetherFortress = { Id = 33, ignoreMob = 'BOSSTreeEnt' },
     MamaTrauma = { Id = 12, ignoreMob = 'BOSSMamaQuillodile' },
-    TheUnderworld = { Id = 26, ignoreMob = 'HadesCerberus', mobWaitTbl = {'HadesCerberus'}, mobWaitTime = 1 },
+    TheUnderworld = { Id = 26, ignoreMob = 'HadesCerberus', mobWaitTbl = {'Hades'}, mobWaitTime = 2 },
     VaneEvent = { Id = 44, priorityTbl = {'EVENTBOSSVane'} },
     ArcaneTower = { Id = 43, priorityTbl = {'Crystal','BOSSKandrix'} },
     RescueInTheRuins = { Id = 30, priorityTbl = {'Alligator','Rapigator','Sentry','HandTower'} },
