@@ -1363,7 +1363,7 @@ end
 LibraryLoaded = true
 
 local Window = Library:CreateWindow({
-    Title = 'Infinite | World Zero v2.05                   Made by @InfiniteKill',
+    Title = 'Infinite | World Zero v2.1                   Made by @InfiniteKill',
     Center = false,
     AutoShow = true,
     TabPadding = 8,
@@ -2029,13 +2029,17 @@ do
     -- Is disabled when kraken spawns in atlantis
     function MobTeleport()
         task.spawn(function()
+            local newMobPos
+            local firstMobFound
             while Toggles.Autofarm.Value and not AtlantisBossCheck do
                 for i,v in pairs(Mobs:GetChildren()) do
                     if v.PrimaryPart and v:FindFirstChild("HealthProperties") and v.HealthProperties:FindFirstChild("Health") and v.HealthProperties.Health.Value > 0 then
                         local mobRoot = v.PrimaryPart
+                        if not firstMobFound then firstMobFound = true end
                         while mobRoot and v:FindFirstChild("HealthProperties") and v.HealthProperties:FindFirstChild('Health') and
                         v.HealthProperties.Health.Value > 0 and Toggles.Autofarm.Value and TeleportingToMob and not AtlantisBossCheck do
                             bestMob = v
+                            newMobPos = mobRoot.Position
                             if Healing then resetCamera() else setMobCamera(Toggles.mobCamera.Value, mobRoot) end
                             local yOffset = (mobRoot.Size.Y/2 + (Options.Offset.Value)) * (ClassData[Class].Type == 'Ranged' and 1 or -1)
                             local extraVector = Healing and healingVector3 or Vector3.new()
@@ -2047,11 +2051,12 @@ do
                 bestMob = nil
                 
                 -- Void TP for safety in Infinite Tower
-                if DungeonID == 38 and TeleportingToMob then SmartPlayerTp(CFrame.new(10000,10000,10000)) end
+                if DungeonID == 38 and TeleportingToMob and firstMobFound then SmartPlayerTp(CFrame.new(10000,10000,10000)) end
                 resetCamera()
                 unnoclip()
                 task.wait()
             end
+            if newMobPos and DungeonID == 38 then SmartPlayerTp(CFrame.new(newMobPos + Vector3.new(0,10,0))) end -- tp back to floor because in infinite tower we tp to void for safety
         end)
     end
 
@@ -2514,7 +2519,7 @@ do
 
         function missionEndRestartOrNextEvent()
             if Toggles.Autofarm.Value then
-                if Toggles.nightmareLoop.Value and table.find(Nightmares, DungeonID) then
+                if Toggles.nightmareLoop.Value and InNightmare then
                     local nextNightmareId = nextInTbl(Nightmares, DungeonID)
 
                     -- Skip Scarecrow Defense if the toggle is on because it takes too fucking long
@@ -2783,7 +2788,7 @@ Toggles.Autofarm:OnChanged(function(togl)
 
         -- Main Autofarm Initiation
         AutoCheckpoint()
-        AntiFling()
+        if DungeonID ~= 38 then AntiFling() end -- no antifling in infinitetower because we have TP to void for safety
         MobCounter()
         local specialTargetingMode = false
         for i,v in pairs(specialTargetingDungeons) do
