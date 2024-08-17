@@ -631,7 +631,7 @@ local specialTargetingDungeons = {
     KonoHeartlands = { Id = 24, ignoreMob = 'CorruptedGreaterTree' },
     AetherFortress = { Id = 33, ignoreMob = 'BOSSTreeEnt' },
     MamaTrauma = { Id = 12, ignoreMob = 'BOSSMamaQuillodile' },
-    TheUnderworld = { Id = 26, ignoreMob = 'HadesCerberus', mobWaitTbl = {'Hades'}, mobWaitTime = 2 },
+    TheUnderworld = { Id = 26, ignoreMob = 'HadesCerberus', mobWaitTbl = {'Hades','HadesCerberus'}, mobWaitTime = 2, alwaysWait = true },
     VaneEvent = { Id = 44, priorityTbl = {'EVENTBOSSVane'} },
     ArcaneTower = { Id = 43, priorityTbl = {'Crystal','BOSSKandrix'} },
     RescueInTheRuins = { Id = 30, priorityTbl = {'Alligator','Rapigator','Sentry','HandTower'} },
@@ -1363,7 +1363,7 @@ end
 LibraryLoaded = true
 
 local Window = Library:CreateWindow({
-    Title = 'Infinite | World Zero v2.04                   Made by @InfiniteKill',
+    Title = 'Infinite | World Zero v2.05                   Made by @InfiniteKill',
     Center = false,
     AutoShow = true,
     TabPadding = 8,
@@ -2045,7 +2045,9 @@ do
                     end
                 end
                 bestMob = nil
-                if InInfiniteTower and TeleportingToMob and not (ReplicatedStorage.ReplicateTowerFloor.Value == 100) then SmartPlayerTp(CFrame.new(10000,10000,10000)) end
+                
+                -- Void TP for safety in Infinite Tower
+                if DungeonID == 38 and TeleportingToMob then SmartPlayerTp(CFrame.new(10000,10000,10000)) end
                 resetCamera()
                 unnoclip()
                 task.wait()
@@ -2053,34 +2055,24 @@ do
         end)
     end
 
-    function MobTeleportIgnore(ignoringMob, mobWaitTbl, waittime)
+    function MobTeleportIgnore(ignoringMob, mobWaitTbl, waittime, alwaysWait)
         local waited
         task.spawn(function()
             while Toggles.Autofarm.Value do
                 for i,v in pairs(Mobs:GetChildren()) do
-                    if v.PrimaryPart and v:FindFirstChild("HealthProperties") and v.HealthProperties:FindFirstChild('Health') and v.HealthProperties.Health.Value > 0 and not (v.Name == ignoringMob) then
-                        local mobRoot = v.PrimaryPart
-                        while mobRoot and v:FindFirstChild("HealthProperties") and v.HealthProperties:FindFirstChild('Health') and
-                        v.HealthProperties.Health.Value > 0 and Toggles.Autofarm.Value and TeleportingToMob do
-                            bestMob = v
-                            if Healing then resetCamera() else setMobCamera(Toggles.mobCamera.Value, mobRoot) end
-                            local yOffset = (mobRoot.Size.Y/2 + (Options.Offset.Value)) * (ClassData[Class].Type == 'Ranged' and 1 or -1)
-                            local extraVector = Healing and healingVector3 or Vector3.new()
-                            SmartPlayerTp(CFrame.new(mobRoot.Position + Vector3.new(0, yOffset, 0) + extraVector) + mobRoot.CFrame.lookVector * 2)
-                            Heartbeat:Wait()
-                        end
-                    elseif v.Name == ignoringMob and MobCount == 1 and v.PrimaryPart and v:FindFirstChild("HealthProperties") and v.HealthProperties:FindFirstChild('Health') and v.HealthProperties.Health.Value > 0 then
-                        if mobWaitTbl and table.find(mobWaitTbl, v.Name) then if not waited then task.wait(waittime); waited = true end end
-                        local mobRoot = v.PrimaryPart
-                        while mobRoot and v:FindFirstChild("HealthProperties") and v.HealthProperties:FindFirstChild('Health') and
-                        v.HealthProperties.Health.Value > 0 and Toggles.Autofarm.Value and TeleportingToMob do
-                            if MobCount > 1 then break end
-                            bestMob = v
-                            if Healing then resetCamera() else setMobCamera(Toggles.mobCamera.Value, mobRoot) end
-                            local yOffset = (mobRoot.Size.Y/2 + (Options.Offset.Value)) * (ClassData[Class].Type == 'Ranged' and 1 or -1)
-                            local extraVector = Healing and healingVector3 or Vector3.new()
-                            SmartPlayerTp(CFrame.new(mobRoot.Position + Vector3.new(0, yOffset, 0) + extraVector) + mobRoot.CFrame.lookVector * 2)
-                            Heartbeat:Wait()
+                    if v.PrimaryPart and v:FindFirstChild("HealthProperties") and v.HealthProperties:FindFirstChild('Health') and v.HealthProperties.Health.Value > 0 then
+                        if v.Name ~= ignoringMob or v.Name == ignoringMob and MobCount == 1 then
+                            if mobWaitTbl and table.find(mobWaitTbl, v.Name) and (not waited or alwaysWait) then task.wait(waittime); waited = true end
+                            local mobRoot = v.PrimaryPart
+                            while mobRoot and v:FindFirstChild("HealthProperties") and v.HealthProperties:FindFirstChild('Health') and
+                            v.HealthProperties.Health.Value > 0 and Toggles.Autofarm.Value and TeleportingToMob and (v.Name ~= ignoringMob or v.Name == ignoringMob and MobCount == 1) do
+                                bestMob = v
+                                if Healing then resetCamera() else setMobCamera(Toggles.mobCamera.Value, mobRoot) end
+                                local yOffset = (mobRoot.Size.Y/2 + (Options.Offset.Value)) * (ClassData[Class].Type == 'Ranged' and 1 or -1)
+                                local extraVector = Healing and healingVector3 or Vector3.new()
+                                SmartPlayerTp(CFrame.new(mobRoot.Position + Vector3.new(0, yOffset, 0) + extraVector) + mobRoot.CFrame.lookVector * 2)
+                                Heartbeat:Wait()
+                            end
                         end
                     end
                 end
@@ -2092,14 +2084,16 @@ do
         end)
     end
 
-    function MobTeleportPriority(priorityTbl, mobWaitTbl, waittime)
+    function MobTeleportPriority(priorityTbl, mobWaitTbl, waittime, alwaysWait)
         local newBestMob, mobName
         task.spawn(function()
             while Toggles.Autofarm.Value do
                 local isPriorityMob = false
+                local mobTbl = Mobs:GetChildren()
                 for i = 1, #priorityTbl do
-                    for _, Mob in pairs(Mobs:GetChildren()) do
-                        if Mob.Name == priorityTbl[i] and Mob.PrimaryPart and Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties:FindFirstChild("Health").Value > 0 then
+                    for _, Mob in pairs(mobTbl) do
+                        if Mob.Name == priorityTbl[i] and Mob.PrimaryPart and Mob:FindFirstChild("HealthProperties") and 
+                        Mob.HealthProperties:FindFirstChild("Health") and Mob.HealthProperties.Health.Value > 0 then
                             isPriorityMob = true
                             newBestMob, mobName = Mob, Mob.Name
                             break
@@ -2110,8 +2104,8 @@ do
                     end
                 end
                 if not isPriorityMob then
-                    for _, Mob in pairs(Mobs:GetChildren()) do
-                        if Mob.PrimaryPart and Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties:FindFirstChild("Health").Value > 0 then
+                    for _, Mob in pairs(mobTbl) do
+                        if Mob.PrimaryPart and Mob:FindFirstChild("HealthProperties") and Mob.HealthProperties:FindFirstChild("Health") and Mob.HealthProperties.Health.Value > 0 then
                             newBestMob, mobName = Mob, Mob.Name
                             break
                         end
@@ -2128,7 +2122,7 @@ do
                     and newBestMob.HealthProperties.Health.Value > 0 and Toggles.Autofarm.Value and newBestMob.PrimaryPart and TeleportingToMob do
                         local newRoot = newBestMob.PrimaryPart
                         bestMob = newBestMob
-                        if mobWaitTbl and table.find(mobWaitTbl, mobName) and not waited then task.wait(waittime); waited = true end
+                        if mobWaitTbl and table.find(mobWaitTbl, mobName) and (not waited or alwaysWait) then task.wait(waittime); waited = true end
                         if Healing then resetCamera() else setMobCamera(Toggles.mobCamera.Value, newRoot) end
                         local yOffset = (newRoot.Size.Y/2 + (Options.Offset.Value)) * (ClassData[Class].Type == 'Ranged' and 1 or -1)
                         local extraVector = Healing and healingVector3 or Vector3.new()
@@ -2796,9 +2790,9 @@ Toggles.Autofarm:OnChanged(function(togl)
             if MissionScripts:FindFirstChild(v.Id) then
                 specialTargetingMode = true
                 if v.ignoreMob then 
-                    MobTeleportIgnore(v.ignoreMob, v.mobWaitTbl, v.mobWaitTime) 
+                    MobTeleportIgnore(v.ignoreMob, v.mobWaitTbl, v.mobWaitTime, v.alwaysWait) 
                 elseif v.priorityTbl then
-                    MobTeleportPriority(v.priorityTbl, v.mobWaitTbl, v.mobWaitTime)
+                    MobTeleportPriority(v.priorityTbl, v.mobWaitTbl, v.mobWaitTime, v.alwaysWait)
                 end
             end
         end
