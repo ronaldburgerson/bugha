@@ -213,7 +213,7 @@ task.spawn(function()
         local nmnAllTime, nmnDaily = getLbScore(Leaderboards.NightmareNormal)
         local infAllTime, infDaily = getLbScore(Leaderboards.InfiniteTower)
         --local vaneAllTime, vaneDaily = getLbScore(Leaderboards.VaneRaid)
-        if gs11AllTime > 0 then hookInfoStr = hookInfoStr .. '\nGuild Points: ``' .. gs11AllTime .. '``' end
+        if gs11AllTime and gs11AllTime > 0 then hookInfoStr = hookInfoStr .. '\nGuild Points: ``' .. gs11AllTime .. '``' end
         if nmcAllTime > 0 then hookInfoStr = hookInfoStr .. '\nNM Challenge Completed: ``' .. nmcAllTime .. '`` / ``' .. nmcDaily .. '``' end
         if nmnAllTime > 0 then hookInfoStr = hookInfoStr .. '\nNM Normal Completed: ``' .. nmnAllTime .. '`` / ``' .. nmnDaily .. '``' end
         if infAllTime > 0 then hookInfoStr = hookInfoStr .. '\nInfinite Tower Floor Record: ``' .. infAllTime  .. '``' end
@@ -1363,7 +1363,7 @@ end
 LibraryLoaded = true
 
 local Window = Library:CreateWindow({
-    Title = 'Infinite | World Zero v2.03                   Made by @InfiniteKill',
+    Title = 'Infinite | World Zero v2.04                   Made by @InfiniteKill',
     Center = false,
     AutoShow = true,
     TabPadding = 8,
@@ -2534,7 +2534,7 @@ do
                     local isTowerNext = table.find(Towers2, nextDungeonId)
                     local joiningNextDungeon = Profile.Level.Value >= missionLevelReq(nextDungeonId) and (DifficultyID == 5 or InTower or InInfiniteTower)
                     local joiningDungeonId = joiningNextDungeon and nextDungeonId or DungeonID
-                    local joiningDifficultyId = joiningNextDungeon and (isTowerNext and 'tower' or oppositeDifficulty[DifficultyID]) or DifficultyID == 1 and 5 or DifficultyID
+                    local joiningDifficultyId = joiningNextDungeon and (isTowerNext and 'tower' or oppositeDifficulty[DifficultyID] or 1) or DifficultyID == 1 and 5 or DifficultyID
                     if joiningDifficultyId == 'tower' then joiningDifficultyId = nil end
                     StartRaid(joiningDungeonId, joiningDifficultyId)
                 elseif Toggles.RestartDungeon.Value then
