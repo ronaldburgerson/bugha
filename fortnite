@@ -2625,7 +2625,7 @@ do
         end)
 
         -- Tower Finished Function - Tower Fail is handled with MissionFinished above
-        if InTower then MissionScripts[DungeonID].TowerFinished.OnClientEvent:Once(function(unknown, completionTime)
+        if InTower or DungeonID == 39 then MissionScripts[DungeonID].TowerFinished.OnClientEvent:Once(function(unknown, completionTime)
             dungeonEndTime = tick()
             DungeonCompleted = true
             dungeonEndGold = Gold.Value
